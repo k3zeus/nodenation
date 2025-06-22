@@ -1,0 +1,1 @@
+curl --user pleb --data-binary '{jsonrpc:1.0,method:getblockchaininfo,params:[]}' -H content-type:text/plain http://127.0.0.1:8332

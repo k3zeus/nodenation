@@ -1,0 +1,94 @@
+#!/bin/bash
+
+echo "Atualizando seu Servidor Ubuntu"
+sudo apt update && sudo apt upgrade
+
+apt install net-tools vim htop lm-sensors nmap -y
+
+######### Instalação via Bitcoin.Org Ubuntu #########
+
+echo "Instalando a versão 28.0 do Bitcoin Core"
+
+wget -c https://bitcoincore.org/bin/bitcoin-core-28.0/bitcoin-28.0-x86_64-linux-gnu.tar.gz
+tar xzvf bitcoin-28.0-x86_64-linux-gnu.tar.gz
+sudo install -m 0755 -o root -g root -t /usr/local/bin bitcoin-28.0/bin/*
+
+echo "Configuração do servidor Bitcoin Core - Finalizada"
+
+echo "
+Instalar o Serviço Fulcrum?"
+echo "
+É necessário ter espaço extra
+Mais de 300Gb recomendado além do Core
+para utilizar o serviço
+"
+echo "Escolha 1 para instalar"
+echo "Escolha 2 para não instalar"
+
+read -p "Digite sua escolha: " escolha
+
+case $escolha in
+	1)
+		then
+#############################################
+### Fulcrum
+echo "Instalando o Fulcrum - Electrum Server"
+
+sudo apt install libssl-dev
+sudo ufw allow 50001/tcp #comment 'allow Fulcrum TCP from anywhere'
+sudo ufw allow 50002/tcp #comment 'allow Fulcrum SSL from anywhere'
+
+echo "# Enable ZMQ blockhash notification (for Fulcrum)
+zmqpubhashblock=tcp://127.0.0.1:8433" >> bitcoin-28.0/bitcoin.conf
+
+	fi
+;
+
+	*)
+		echo "Continuando a instalação sem Fulcrum...
+"
+
+echo "Configure o serviço Bitcoin na Inicialização!
+Execute o comando $crontab -e
+E adicione na ultima linha esse comando:
+@reboot bitcoind -daemon"
+
+echo "
+Execute o arquivo bitcoin.sh para inicializar seu servidor
+Ou reinicie o seu Node
+"
+
+echo "
+#################
+
+Após essa configuração seu servidor estará instalado
+                e
+   inicializando junto com o sistem
+
+"
+#
+
+exit 0
+
+#
+#
+########## Instalação via SNAP (não recomendado) ##############
+#sudo apt install snapd
+
+#sudo snap install bitcoin-core
+
+### Fulcrum
+#echo "Instalando o Fulcrum - Electrum Server"
+
+#sudo apt install libssl-dev
+#sudo ufw allow 50001/tcp #comment 'allow Fulcrum TCP from anywhere'
+#sudo ufw allow 50002/tcp #comment 'allow Fulcrum SSL from anywhere'
+
+#echo "# Enable ZMQ blockhash notification (for Fulcrum)
+#zmqpubhashblock=tcp://127.0.0.1:8433" >> /home/$USER/snap/bitcoin-core/common/.bitcoin/bitcoin.conf
+
+#sudo ss -tulpn | grep bitcoin-core.daemon | grep 8433
+
+#https://bitcoin.org/bin/bitcoin-core-27.0/bitcoin-27.0-x86_64-linux-gnu.tar.gz
+
+#bitcoin-core.daemon -datadir=/home/$USER/snap/bitcoin-core/common/.bitcoin
