@@ -1,10 +1,10 @@
 #!/bin/sh
 
 echo "##### Atualizando o Sistema #####"
-sudo apt update && sudo apt upgrade -y
+sudo apt update && sudo apt upgrade
 
 echo "##### Instalando as Ferramentas Básicas #####"
-sudo apt install htop vim net-tools nmap tree lm-sensors openssh-server iptraf-ng -y
+sudo apt install htop vim net-tools nmap tree lm-sensors openssh-server iptraf-ng
 
 echo "##### criando Aliases #####"
 echo '# Agora ls é colorido, frufru.
@@ -29,8 +29,7 @@ alias c="clear"
 alias vi="vim"
 # Sudo
 alias root="sudo -i"
-#
-' >> $HOME/.bash_aliases
+# ' >> $HOME/.bash_aliases
 
 #echo "###### Atualizando ########"
 echo "Execute: source .bashrc"
