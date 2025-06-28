@@ -14,7 +14,7 @@ check_root() {
 
 listar_interfaces_wireless() {
     echo "[INFO] Buscando interfaces wireless..."
-    iw dev | awk "$1=='Interface'{print $2}"
+    iw dev | awk '$1=="Interface"{print $2}'
 }
 
 selecionar_interface() {
