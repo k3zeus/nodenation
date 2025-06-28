@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Data e hora
+# Script for temperature monitor v.0.1 - @k3zeus
 date
 #
 # Sensores
@@ -8,13 +8,13 @@ sensors
 
 paste <(cat /sys/class/thermal/thermal_zone*/type) <(cat /sys/class/thermal/thermal_zone*/temp) | column -s $'\t' -t | sed 's/\(.\)..$/.\1°C/'
 
-# Opção de mostrar em tempo real
+# Option to show in real time
 #
-echo "Mostrar Temperatura em Tempo Real?
+echo "Show Real Time Temperature?
 #
-Deseja continuar? [s/N]"
+Continue? [y/N]"
 read resp
-if [ $resp. != 's.' ]; then
+if [ $resp. != 'y.' ]; then
     exit 0
 fi
 
