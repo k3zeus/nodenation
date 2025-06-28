@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Desativando o Cloud-Init
+sudo touch /etc/cloud/cloud-init.disabled
+
+#
 echo "##### Atualizando o Sistema #####"
 sudo apt update && sudo apt upgrade -y
 
