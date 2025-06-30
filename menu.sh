@@ -1,34 +1,86 @@
 #!/bin/bash
+#
+sudo su
+#
+cd /root/
+#
+echo "
+Escolha uma opção:
+#"
+echo "1 - Instalar o Halfyn Node"
+echo "2 - Instalar o Satoshi Node"
+echo "3 - Instalar o Satoshi Node"
+echo "4 - Instalar o Craig Node"
+echo "5 ou qualquer outra tecla - Sair"
 
-echo "Choose an option:"
-echo "1 - Execute script_s.sh"
-echo "2 - Executer script_b.sh"
-echo "3 or any other key - Exit"
+read -p "
+Digite sua escolha: " escolha
 
-read -p "Enter your choice: " choose
-
-case $chose in
+case $escolha in
     1)
-        if [ -f "/satoshi/script_s.sh" ]; then
-            echo "Running script_s.sh..."
-	    cp /satoshi/script_s.sh /root/nodenation/
-            /bin/bash /root/nodenation/script_s.sh
-        else
-            echo "Error: /satoshi/script_s.sh not found!"
-            exit 1
-        fi
+            echo "
+Running o Halfyn Node..."
+echo "#################################
+	Qual seu equipamento?	
+#################################"
+echo "#################################
+
+Ubuntu Server instalado em:
+		      
+[1] RaspBerry Pi + Dongle Wifi
+[2] Raspberry Pi sem Dongle
+[3] Banana Pi Zero
+[4] Outro
+#################################
+"
+
+	read -p "Escolha a sua configuração: " TIPO
+	if [[ "$TIPO" == "1" ]]; then
+	wget https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/halfyn/script_rasp.sh
+	chmod +x script_rasp.sh
+	./script_rasp.sh
+	fi
+	if [[ "$TIPO" == "3" ]]; then
+	curl -sS https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/halfyn/script_openwrt.sh | bash
+	fi
+	if [[ "$TIPO" == "4" ]]; then
+	curl -sS https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/halfyn/script_rasp.sh | bash
+	fi
+	if [[ "$TIPO" == "2" ]]; then
+	echo "Script em fase de testes"
+	exit 0
+	fi
+	
         ;;
     2)
         if [ -f "/pleb/script_b.sh" ]; then
-            echo "Running script_b.sh..."
+            echo "Instalar o Satoshi Node..."
             /bin/bash /pleb/script_b.sh
         else
-            echo "Error: /pleb/script_b.sh not found!"
+            echo "Erro: /pleb/script_b.sh não encontrado!"
+            exit 1
+        fi
+        ;;
+    3)
+        if [ -f "/pleb/script_b.sh" ]; then
+            echo "Instalar o Satoshi Node..."
+            /bin/bash /pleb/script_b.sh
+        else
+            echo "Erro: /pleb/script_b.sh não encontrado!"
+            exit 1
+        fi
+        ;;
+    4)
+        if [ -f "/pleb/script_b.sh" ]; then
+            echo "Enganando o Craig Node..."
+            /bin/bash /pleb/script_b.sh
+        else
+            echo "Erro: /pleb/script_b.sh não encontrado!"
             exit 1
         fi
         ;;
     *)
-        echo "exitting without execute."
+        echo "Saindo sem executar nada."
         exit 0
         ;;
 esac
