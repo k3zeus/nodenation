@@ -36,9 +36,9 @@ Ubuntu Server instalado em:
 
 	read -p "Escolha a sua configuração: " TIPO
 	if [[ "$TIPO" == "1" ]]; then
-	wget https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/halfyn/script_rasp.sh
-	chmod +x script_rasp.sh
-	./script_rasp.sh
+	wget https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/halfyn/alias.sh /root/
+	chmod +x /root/alias.sh
+	/root/./alias.sh
 	fi
 	if [[ "$TIPO" == "3" ]]; then
 	curl -sS https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/halfyn/script_openwrt.sh | bash
