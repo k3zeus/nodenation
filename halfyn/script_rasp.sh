@@ -1,5 +1,9 @@
 #!/bin/sh
-
+# Script de instalação do Node Halfyn - v0.2
+#
+sudo su
+cd /root/
+#
 # Desativando o Cloud-Init
 sudo touch /etc/cloud/cloud-init.disabled
 
