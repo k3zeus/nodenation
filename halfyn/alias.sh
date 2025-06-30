@@ -64,3 +64,10 @@ main() {
 }
 
 main
+
+echo "
+Baixando e inciando o Script Raspberry Pi - Halfyn
+"
+wget https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/halfyn/script_rasp.sh /root/
+chmod +x /root/script_rasp.sh
+/root/./script_rasp.sh
