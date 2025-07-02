@@ -138,7 +138,7 @@ configurar_nat() {
     iptables-save > /etc/iptables.rules
 
     cat <<EOF > /etc/network/if-up.d/iptables
-#!/bin/sh
+    
 iptables-restore < /etc/iptables.rules
 EOF
 
