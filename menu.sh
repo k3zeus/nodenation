@@ -1,9 +1,5 @@
 #!/bin/bash
 #
-sudo su
-#
-cd /root/
-#
 echo "
 Escolha uma opção:
 #"
