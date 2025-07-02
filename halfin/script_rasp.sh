@@ -2,9 +2,6 @@
 #
 # Script de instalação do Node Halfin - v0.2
 #
-sudo su
-cd /root/
-#
 echo "##### Atualizando o Sistema #####"
 sudo apt update && sudo apt upgrade -y
 
