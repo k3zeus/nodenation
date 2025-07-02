@@ -32,13 +32,9 @@ Ubuntu Server instalado em:
 
 	read -p "Escolha a sua configuração: " TIPO
 	if [[ "$TIPO" == "1" ]]; then
- 	mkdir /root/nodenation/
-  	mkdir /root/nodenation/extras
-	wget -P  /root/nodenation https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/halfyn/alias.sh
- 	wget -P  /root/nodenation https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/halfin/script_rasp.sh
-	chmod +x /root/nodenation/*.sh
-	/root/nodenation/./alias.sh
- 	/root/nodenation/./script_rasp.sh
+ 	git clone https://github.com/k3zeus/nodenation.git /root/
+	/root/nodenation/halfin/./alias.sh
+ 	/root/nodenation/halfin/./script_rasp.sh
 	fi
 	if [[ "$TIPO" == "3" ]]; then
 	curl -sS https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/halfyn/script_openwrt.sh | bash
