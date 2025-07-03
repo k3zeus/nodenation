@@ -11,7 +11,7 @@ echo " [1] bitcoin-core-28.0"
 echo " [2] bitcoin-core-27.2"
 echo " [3] bitcoin-core-25.0"
 
-read -P "Chose version: " chose
+read -p "Chose version: " chose
 ######### Instalação via Bitcoin.Org Ubuntu #########
 1="bitcoin-28.0"
 2="bitcoin-27.1"
