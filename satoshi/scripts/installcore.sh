@@ -13,7 +13,7 @@ echo "###################################"
 echo " [1] bitcoin-core-28.0"
 echo " [2] bitcoin-core-27.2"
 echo " [3] bitcoin-core-25.0"
-echo " [4] bitcoin-core-13.2"
+echo " [4] bitcoin-core-0.13.2"
 echo ""
 read -p " Chose version (1-4): " chose
 echo ""
@@ -31,7 +31,7 @@ vers="bitcoin-27.2"
 vers="bitcoin-25.0"
 ;;
 4)
-vers="bitcoin-13.2"
+vers="bitcoin-0.13.2"
 ;;
 *)
 echo " Invalid Option, good bye....."
