@@ -2,7 +2,7 @@
 #
 # Instalation Configuration and Tools for "Satochi Node" Jun/2026 0.4v
 
-mv /root/satoshi/scripts/*.sh /root/
+mv /root/nodenation/satoshi/scripts/*.sh /root/
 
 echo "##### Updating Sistem #####"
 sudo apt update && sudo apt upgrade -y
@@ -14,7 +14,7 @@ echo "################################################"
 echo "######### Instalação do Bitcoin Core ###########"
 echo "################################################"
 
-/root/nodenation/installcore.sh
+/root/installcore.sh
 
 echo "##### Aliases #####"
 echo '# Now ls be colors.
