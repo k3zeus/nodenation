@@ -2,13 +2,19 @@
 #
 # Instalation Configuration and Tools for "Satochi Node" Jun/2026 0.4v
 
-mv /$HOME/nodenation/satoshi/scripts/*.sh /$HOME/nodenation/
+mv /root/nodenation/satoshi/scripts/*.sh /root/nodenation/
 
 echo "##### Updating Sistem #####"
 sudo apt update && sudo apt upgrade -y
 
 echo "##### Basic Updades and Applications #####"
 sudo apt install htop vim net-tools nmap tree lm-sensors openssh-server iptraf-ng -y
+
+echo "################################################"
+echo "######### Instalação do Bitcoin Core ###########"
+echo "################################################"
+
+/root/nodenation/installcore.sh
 
 echo "##### Aliases #####"
 echo '# Now ls be colors.
