@@ -3,7 +3,7 @@
 echo "##################################"
 echo " 1 - Install o Halfin Node"
 echo " 2 - Install o Satoshi Node"
-echo " 3 - Install o Satoshi Node"
+echo " 3 - Install o Nick Node"
 echo " 4 - Install o Craig Node"
 echo " 5 or another option - Out"
 echo "##################################"
