@@ -10,6 +10,7 @@ echo ""
 echo "###################################"
 echo "# Chose your Bitcoin Core Version #"
 echo "###################################"
+echo ""
 echo " [1] bitcoin-core-28.0"
 echo " [2] bitcoin-core-27.2"
 echo " [3] bitcoin-core-25.0"
@@ -29,6 +30,7 @@ echo ""
 echo "###################################"
 echo "###### What your Archteture #######"
 echo "###################################"
+echo ""
 echo " [1] Ubuntu Server x86 - PC"
 echo " [2] Raspberry Pi - Arm64"
 echo " [3] Apple - Darwin"
@@ -37,6 +39,7 @@ echo " [5] Exit"
 echo ""
 
         v="bitcoin-28.0"
+        p="bitcoin-core-28.0"
 
 read -p " Chose Archteture (1 - 4): " arq
 case $arq in
@@ -51,7 +54,7 @@ case $arq in
         ;;
         4)
         vers=$v"-riscv64-linux-gnu"
-        ;;        
+        ;;
         *)
         echo " Wrong choice, good by!"
         exit 1
@@ -66,6 +69,7 @@ echo ""
 echo "###################################"
 echo "###### What your Archteture #######"
 echo "###################################"
+echo ""
 echo " [1] Ubuntu Server x86 - PC"
 echo " [2] Raspberry Pi - Arm64"
 echo " [3] Apple - Darwin"
@@ -74,6 +78,7 @@ echo " [5] Exit"
 echo ""
 
         v="bitcoin-27.2"
+        p="bitcoin-core-27.2"
 
 read -p " Chose Archteture (1 - 4): " arq
 case $arq in
@@ -88,7 +93,8 @@ case $arq in
         ;;
         4)
         vers=$v"-riscv64-linux-gnu"
-        ;;        
+        ;;
+
         *)
         echo " Wrong choice, good by!"
         exit 1
@@ -103,6 +109,7 @@ echo ""
 echo "###################################"
 echo "###### What your Archteture #######"
 echo "###################################"
+echo ""
 echo " [1] Ubuntu Server x86 - PC"
 echo " [2] Raspberry Pi - Arm64"
 echo " [3] Apple - Darwin"
@@ -111,6 +118,7 @@ echo " [5] Exit"
 echo ""
 
         v="bitcoin-25.0"
+        p="bitcoin-core-25.0"
 
 read -p " Chose Archteture (1 - 4): " arq
 case $arq in
@@ -125,7 +133,7 @@ case $arq in
         ;;
         4)
         vers=$v"-riscv64-linux-gnu"
-        ;;        
+        ;;
         *)
         echo " Wrong choice, good by!"
         exit 1
@@ -140,6 +148,7 @@ echo ""
 echo "###################################"
 echo "###### What your Archteture #######"
 echo "###################################"
+echo ""
 echo " [1] Ubuntu Server x86 - PC"
 echo " [2] Raspberry Pi - Arm64"
 echo " [3] Apple - Darwin"
@@ -148,6 +157,7 @@ echo " [5] Exit"
 echo ""
 
         v="bitcoin-0.13.2"
+        p="bitcoin-core-0.13.2"
 
 read -p " Chose Archteture (1 - 4): " arq
 case $arq in
@@ -162,7 +172,8 @@ case $arq in
         ;;
         4)
         vers=$v"-riscv64-linux-gnu"
-        ;;        
+        ;;
+
         *)
         echo " Wrong choice, good by!"
         exit 1
@@ -179,7 +190,7 @@ esac
 echo ""
 echo "Instalando a versão $v do Bitcoin Core"
 
-wget -P /root/ -c https://bitcoincore.org/bin/$v/$vers.tar.gz
+wget -P /root/ -c https://bitcoincore.org/bin/$p/$vers.tar.gz
 tar xzvf /root/$vers.tar.gz
 sudo install -m 0755 -o root -g root -t /usr/local/bin /root/$v/bin/*
 rm -r $vers.tar.gz
