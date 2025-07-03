@@ -4,14 +4,25 @@
 #sudo apt update && sudo apt upgrade
 
 #apt install net-tools vim htop lm-sensors nmap -y
+echo "###############################"
+echo "Chose your Bitcoin Core Version"
+echo "###############################"
+echo " [1] bitcoin-core-28.0"
+echo " [2] bitcoin-core-27.2"
+echo " [3] bitcoin-core-25.0"
 
+read -P "Chose version: " chose
 ######### Instalação via Bitcoin.Org Ubuntu #########
+1="bitcoin-28.0"
+2="bitcoin-27.1"
+3="bitcoin-25.0"
 
 echo "Instalando a versão 28.0 do Bitcoin Core"
 
-wget -P /root/ -c https://bitcoincore.org/bin/bitcoin-core-28.0/bitcoin-28.0-x86_64-linux-gnu.tar.gz
-tar xzvf /root/bitcoin-28.0-x86_64-linux-gnu.tar.gz
-sudo install -m 0755 -o root -g root -t /usr/local/bin /root/bitcoin-28.0/bin/*
+wget -P /root/ -c https://bitcoincore.org/bin/$chose/$chose-x86_64-linux-gnu.tar.gz
+tar xzvf /root/$chose-x86_64-linux-gnu.tar.gz
+sudo install -m 0755 -o root -g root -t /usr/local/bin /root/$chose/bin/*
+rm -r $chose-x86_64-linux-gnu.tar.gz
 
 echo "Configuração do servidor Bitcoin Core - Finalizada"
 
