@@ -18,23 +18,24 @@ read -p "Chose version: " chose
 case $chose in
 #
 # Variáveis
-1)
 if [[ "$chose" == 1 ]]; then
 vers="bitcoin-28.0"
 fi
-2)
 if [[ "$chose" == 2 ]]; then
 vers="bitcoin-27.2"
 fi
-3)
 if [[ "$chose" == 3 ]]; then
 vers="bitcoin-25.0"
 fi
-4)
 if [[ "$chose" == 4 ]]; then
 vers="bitcoin-13.2"
 fi
+else
+echo ""
+echo "Opção escolhida não existe!"
+fi
 #
+echo ""
 echo "Instalando a versão $vers do Bitcoin Core"
 
 wget -P /root/ -c https://bitcoincore.org/bin/$vers/$vers-x86_64-linux-gnu.tar.gz
@@ -42,7 +43,9 @@ tar xzvf /root/$vers-x86_64-linux-gnu.tar.gz
 sudo install -m 0755 -o root -g root -t /usr/local/bin /root/$vers/bin/*
 rm -r $vers-x86_64-linux-gnu.tar.gz
 
+echo ""
 echo "Configuração do servidor Bitcoin Core - Finalizada"
+echo ""
 
 esac
 
