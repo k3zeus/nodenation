@@ -1,6 +1,11 @@
 #!bin/bash
 # Start Ghost Nation Script v.01
 #
+echo "Atualizando seu Servidor Ubuntu"
+sudo apt update && sudo apt upgrade
+
+apt install net-tools vim htop lm-sensors nmap dos2unix -y
+#
 echo "##################################"
 echo "## Welcome to Ghost Node Nation ##"
 echo "##################################"
