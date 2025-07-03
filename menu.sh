@@ -9,8 +9,7 @@ echo "3 - Instalar o Satoshi Node"
 echo "4 - Instalar o Craig Node"
 echo "5 ou qualquer outra tecla - Sair"
 
-read -p "
-Digite sua escolha: " escolha
+read -p "Digite sua escolha: " escolha
 
 pasta1="/root/nodenation/"
 
