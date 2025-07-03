@@ -17,4 +17,7 @@ echo "#################################"
 find /root/nodenation/ -name "*.sh" -type f -print0 | xargs -0 chmod +x
 
 # Execute the Menu:
-/root/nodenation/menu.sh
+echo "###########################################"
+echo "### Execute this command ###"
+echo "###########################################"
+echo "sudo /root/nodenation/./menu.sh"
