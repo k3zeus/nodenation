@@ -1,17 +1,17 @@
 #!/bin/bash
 
-echo "Atualizando seu Servidor Ubuntu"
-sudo apt update && sudo apt upgrade
+#echo "Atualizando seu Servidor Ubuntu"
+#sudo apt update && sudo apt upgrade
 
-apt install net-tools vim htop lm-sensors nmap -y
+#apt install net-tools vim htop lm-sensors nmap -y
 
 ######### Instalação via Bitcoin.Org Ubuntu #########
 
 echo "Instalando a versão 28.0 do Bitcoin Core"
 
-wget -c https://bitcoincore.org/bin/bitcoin-core-28.0/bitcoin-28.0-x86_64-linux-gnu.tar.gz
-tar xzvf bitcoin-28.0-x86_64-linux-gnu.tar.gz
-sudo install -m 0755 -o root -g root -t /usr/local/bin bitcoin-28.0/bin/*
+wget -P /root/ -c https://bitcoincore.org/bin/bitcoin-core-28.0/bitcoin-28.0-x86_64-linux-gnu.tar.gz
+tar xzvf /root/bitcoin-28.0-x86_64-linux-gnu.tar.gz
+sudo install -m 0755 -o root -g root -t /usr/local/bin /root/bitcoin-28.0/bin/*
 
 echo "Configuração do servidor Bitcoin Core - Finalizada"
 
@@ -28,8 +28,9 @@ echo "Escolha 2 para não instalar"
 read -p "Digite sua escolha: " escolha
 
 case $escolha in
-	1)
-		then
+
+        1)
+
 #############################################
 ### Fulcrum
 echo "Instalando o Fulcrum - Electrum Server"
@@ -41,18 +42,17 @@ sudo ufw allow 50002/tcp #comment 'allow Fulcrum SSL from anywhere'
 echo "# Enable ZMQ blockhash notification (for Fulcrum)
 zmqpubhashblock=tcp://127.0.0.1:8433" >> bitcoin-28.0/bitcoin.conf
 
-	fi
-;
+;;
+        2)
 
-	*)
-		echo "Continuando a instalação sem Fulcrum...
-"
-
+        echo "Continuando a instalação sem Fulcrum..."
+echo "#############################################"
 echo "Configure o serviço Bitcoin na Inicialização!
 Execute o comando $crontab -e
 E adicione na ultima linha esse comando:
 @reboot bitcoind -daemon"
 
+echo "#############################################"
 echo "
 Execute o arquivo bitcoin.sh para inicializar seu servidor
 Ou reinicie o seu Node
@@ -69,6 +69,9 @@ Após essa configuração seu servidor estará instalado
 #
 
 exit 0
+
+        ;;
+esac
 
 #
 #
