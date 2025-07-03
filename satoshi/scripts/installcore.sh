@@ -18,16 +18,16 @@ read -p "Chose version: " chose
 case $chose in
 #
 # Variáveis
-if [[ "$chose" == 1 ]]; then
+if [[ "$chose" == 1 ]]
 vers="bitcoin-28.0"
 fi
-if [[ "$chose" == 2 ]]; then
+if [[ "$chose" == 2 ]]
 vers="bitcoin-27.2"
 fi
-if [[ "$chose" == 3 ]]; then
+if [[ "$chose" == 3 ]];
 vers="bitcoin-25.0"
 fi
-if [[ "$chose" == 4 ]]; then
+if [[ "$chose" == 4 ]];
 vers="bitcoin-13.2"
 fi
 else
