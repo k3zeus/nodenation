@@ -8,7 +8,8 @@ $ sudo cd /root/
 $ sudo git clone https://github.com/k3zeus/nodenation.git /root/nodenation
 #
 Change permition to scripts:
-chmod -R 755 nodenation/
+#
+find /root/nodenation/ -name "*.sh" -type f -print0 | xargs -0 chmod +x
 
 #
 Execute the Menu:
