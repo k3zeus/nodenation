@@ -5,15 +5,16 @@
 
 #apt install net-tools vim htop lm-sensors nmap -y
 echo ""
-echo "###############################"
-echo "Chose your Bitcoin Core Version"
-echo "###############################"
+echo "###################################"
+echo "# Chose your Bitcoin Core Version #"
+echo "###################################"
 echo " [1] bitcoin-core-28.0"
 echo " [2] bitcoin-core-27.2"
 echo " [3] bitcoin-core-25.0"
 echo " [4] bitcoin-core-13.2"
 echo ""
-read -p "Chose version (1-4): " chose
+read -p " Chose version (1-4): " chose
+echo ""
 ######### Instalação via Bitcoin.Org Ubuntu #########
 case $chose in
 #
@@ -30,11 +31,6 @@ vers="bitcoin-25.0"
 4)
 vers="bitcoin-13.2"
 ;;
-*)
-echo ""
-echo "Opção escolhida não existe!"
-exit 0
-;;
 #
 echo ""
 echo "Instalando a versão $vers do Bitcoin Core"
@@ -45,22 +41,25 @@ sudo install -m 0755 -o root -g root -t /usr/local/bin /root/$vers/bin/*
 rm -r $vers-x86_64-linux-gnu.tar.gz
 
 echo ""
-echo "Configuração do servidor Bitcoin Core - Finalizada"
+echo " Configuração do servidor Bitcoin Core - Finalizada"
 echo ""
 
 esac
 
-echo "
-Instalar o Serviço Fulcrum?"
-echo "
-É necessário ter espaço extra
-Mais de 300Gb recomendado além do Core
-para utilizar o serviço
-"
-echo "Escolha 1 para instalar"
-echo "Escolha 2 para não instalar"
+echo ""
 
-read -p "Digite sua escolha: " escolha
+echo "##################################"
+echo " Instalar o Serviço Fulcrum?"
+echo ""
+echo " É necessário ter espaço extra"
+echo " Mais de 300Gb recomendado além do Core"
+echo " para utilizar o serviço"
+echo ""
+echo "##################################"
+echo " Escolha 1 para instalar"
+echo " Escolha 2 para não instalar"
+
+read -p " Digite sua escolha: " escolha
 
 case $escolha in
 
