@@ -3,12 +3,13 @@ Nation of Nodes Project Repository
 #
 Download Menu Script for base instalation:
 
-$ sudo wget https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/menu.sh /root/
+$ sudo cd /root/
+$ sudo git clone https://github.com/k3zeus/nodenation.git
 #
-Change permition to script:
+Change permition to scripts:
+chmod -R 755 nodenation/
 
-$ sudo chmod +x /root/menu.sh
 #
 Execute the Menu:
 
-$ /home/./menu.sh
+$ /root/nodenation/./menu.sh
