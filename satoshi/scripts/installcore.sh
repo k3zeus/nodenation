@@ -1,4 +1,4 @@
-#!/bin/bash
+o #!/bin/bash
 
 #echo "Atualizando seu Servidor Ubuntu"
 #sudo apt update && sudo apt upgrade
@@ -59,8 +59,10 @@ echo ""
 echo "######################################################"
 echo " Escolha 1 para instalar"
 echo " Escolha 2 para não instalar"
+echo ""
 
-read -p " Digite sua escolha: " escolha
+read -p " Digite sua escolha: " escolhan
+echo ""
 
 case $escolha in
 
@@ -84,23 +86,28 @@ echo "#####################################################"
 echo " Continuando a instalação sem Fulcrum..."
 echo "#####################################################"
 echo ""
+echo ""
 echo "#####################################################"
 echo " Configure o serviço Bitcoin na Inicialização!"
 echo " Execute o comando crontab -e"
 echo " E adicione na ultima linha esse comando: "
+echo ""
 echo " @reboot bitcoind -daemon"
+echo ""
 echo "#####################################################"
 echo ""
 echo "#####################################################"
 echo "######### Execute o arquivo bitcoin.sh para #########"
 echo "############# inicializar seu servidor ##############"
 echo "############## Ou reinicie o seu Node ###############"
+echo "#####################################################"
 echo ""
 echo "#####################################################"
-echo "Após essa configuração seu servidor estará instalado"
-echo "#                   e                               #"
-echo "######### Inicializando junto com o sistem ##########"
+echo " Após essa configuração seu servidor estará instalado"
+echo " e "
+echo " Inicializando junto com o sistema"
 echo "#####################################################"
+echo ""
 #
 
 exit 0
