@@ -17,4 +17,4 @@ echo "Change permition to scripts:"
 find /root/nodenation/ -name "*.sh" -type f -print0 | xargs -0 chmod +x
 
 # Execute the Menu:
-/root/nodenation/./menu.sh
+/root/nodenation/menu.sh
