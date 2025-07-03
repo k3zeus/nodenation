@@ -31,6 +31,11 @@ vers="bitcoin-25.0"
 4)
 vers="bitcoin-13.2"
 ;;
+*)
+echo " Invalid Option, good bye....."
+exit 1
+;;
+esac
 #
 echo ""
 echo "Instalando a versão $vers do Bitcoin Core"
@@ -41,21 +46,17 @@ sudo install -m 0755 -o root -g root -t /usr/local/bin /root/$vers/bin/*
 rm -r $vers-x86_64-linux-gnu.tar.gz
 
 echo ""
-echo " Configuração do servidor Bitcoin Core - Finalizada"
+echo "# Configuração do servidor Bitcoin Core - Finalizada #"
+echo "######################################################"
 echo ""
-
-esac
-
-echo ""
-
-echo "##################################"
+echo "######################################################"
 echo " Instalar o Serviço Fulcrum?"
 echo ""
 echo " É necessário ter espaço extra"
 echo " Mais de 300Gb recomendado além do Core"
 echo " para utilizar o serviço"
 echo ""
-echo "##################################"
+echo "######################################################"
 echo " Escolha 1 para instalar"
 echo " Escolha 2 para não instalar"
 
