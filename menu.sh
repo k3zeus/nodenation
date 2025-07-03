@@ -3,7 +3,7 @@
 echo "
 Escolha uma opção:
 #"
-echo "1 - Instalar o Halfyn Node"
+echo "1 - Instalar o Halfin Node"
 echo "2 - Instalar o Satoshi Node"
 echo "3 - Instalar o Satoshi Node"
 echo "4 - Instalar o Craig Node"
