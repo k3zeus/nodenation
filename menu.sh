@@ -12,48 +12,51 @@ echo "5 ou qualquer outra tecla - Sair"
 read -p "
 Digite sua escolha: " escolha
 
+pasta1="/root/nodenation/"
+
 case $escolha in
     1)
             echo "
 Running o Halfyn Node..."
 echo "#################################
-	Qual seu equipamento?	
+        Qual seu equipamento?
 #################################"
 echo "#################################
 
 Ubuntu Server instalado em:
-		      
+
 [1] RaspBerry Pi + Dongle Wifi
 [2] Raspberry Pi sem Dongle
 [3] Banana Pi Zero
 [4] Outro
 #################################
 "
-
-	read -p "Escolha a sua configuração: " TIPO
-	if [[ "$TIPO" == "1" ]]; then
- 	git clone https://github.com/k3zeus/nodenation.git /root/
-	/root/nodenation/halfin/./alias.sh
- 	/root/nodenation/halfin/./script_rasp.sh
-	fi
-	if [[ "$TIPO" == "3" ]]; then
-	curl -sS https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/halfyn/script_openwrt.sh | bash
-	fi
-	if [[ "$TIPO" == "4" ]]; then
-	curl -sS https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/halfyn/script_rasp.sh | bash
-	fi
-	if [[ "$TIPO" == "2" ]]; then
-	echo "Script em fase de testes"
-	exit 0
-	fi
-	
+        read -p "Escolha a sua configuração: " TIPO
+        if [[ "$TIPO" == "1" ]]; then
+        git clone https://github.com/k3zeus/nodenation.git /root/
+        /root/nodenation/halfin/./alias.sh
+        /root/nodenation/halfin/./script_rasp.sh
+        fi
+        if [[ "$TIPO" == "3" ]]; then
+        curl -sS https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/halfyn/script_openwrt.sh | bash
+        fi
+        if [[ "$TIPO" == "4" ]]; then
+        curl -sS https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/halfyn/script_rasp.sh | bash
+        fi
+        if [[ "$TIPO" == "2" ]]; then
+        echo "Script em fase de testes"
+        exit 0
+        fi
         ;;
     2)
-        if [ -f "/pleb/script_b.sh" ]; then
+
+satoshi=$pasta1"satoshi/script_s.sh"
+
+        if [ -f "$satoshi" ]; then
             echo "Instalar o Satoshi Node..."
-            /bin/bash /pleb/script_b.sh
+            /bin/bash $satoshi
         else
-            echo "Erro: /pleb/script_b.sh não encontrado!"
+            echo "Erro: $satoshi não encontrado!"
             exit 1
         fi
         ;;
