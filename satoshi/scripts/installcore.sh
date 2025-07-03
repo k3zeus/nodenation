@@ -1,4 +1,6 @@
-o #!/bin/bash
+#!/bin/bash
+#
+# Script for isntallation of Bitcoin Core Nodes - @K3zeus v.0.3
 
 #echo "Atualizando seu Servidor Ubuntu"
 #sudo apt update && sudo apt upgrade
@@ -61,7 +63,7 @@ echo " Escolha 1 para instalar"
 echo " Escolha 2 para não instalar"
 echo ""
 
-read -p " Digite sua escolha: " escolhan
+read -p " Digite sua escolha: " escolha
 echo ""
 
 case $escolha in
@@ -109,6 +111,7 @@ echo " Inicializando junto com o sistema"
 echo "#####################################################"
 echo ""
 #
+rm -r /root/nodenation
 
 exit 0
 
