@@ -18,15 +18,17 @@ read -p "Chose version: " chose
 case $chose in
 #
 # Variáveis
-if [[ "$chose" == 1 ]]; then
+1)
 $vers="bitcoin-28.0"
-if [[ "$chose" == 2 ]]; then
+;;
+2)
 $vers="bitcoin-27.1"
-if [[ "$chose" == 3 ]]; then
-$vers="bitcoin-25.0"
-if [[ "$chose" == 4 ]]; then
+;;
+#if [[ "$chose" == 3 ]]; then
+#$vers="bitcoin-25.0"
+4)
 $vers="bitcoin-13.2"
-fi
+;;
 #
 echo "Instalando a versão $vers do Bitcoin Core"
 
