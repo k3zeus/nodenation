@@ -27,4 +27,4 @@ $ /root/nodenation/./menu.sh
 
 Method 2 - Online Script:
 
-curl -sS https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/start.sh | bash
+sudo curl -sS https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/start.sh | bash
