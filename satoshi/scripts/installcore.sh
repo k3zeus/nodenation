@@ -4,6 +4,7 @@
 #sudo apt update && sudo apt upgrade
 
 #apt install net-tools vim htop lm-sensors nmap -y
+echo ""
 echo "###############################"
 echo "Chose your Bitcoin Core Version"
 echo "###############################"
