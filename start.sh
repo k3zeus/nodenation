@@ -6,6 +6,7 @@ sudo apt update && sudo apt upgrade
 
 apt install net-tools vim htop lm-sensors nmap dos2unix -y
 #
+echo ""
 echo "##################################"
 echo "## Welcome to Ghost Node Nation ##"
 echo "##################################"
