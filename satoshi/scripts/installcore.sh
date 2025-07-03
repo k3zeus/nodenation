@@ -19,15 +19,16 @@ case $chose in
 #
 # Variáveis
 1)
-$vers="bitcoin-28.0"
+vers="bitcoin-28.0"
 ;;
 2)
-$vers="bitcoin-27.1"
+vers="bitcoin-27.1"
 ;;
 #if [[ "$chose" == 3 ]]; then
 #$vers="bitcoin-25.0"
 4)
-$vers="bitcoin-13.2"
+vers="bitcoin-13.2"
+echo $vers
 ;;
 #
 echo "Instalando a versão $vers do Bitcoin Core"
