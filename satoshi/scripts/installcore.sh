@@ -13,27 +13,28 @@ echo " [2] bitcoin-core-27.2"
 echo " [3] bitcoin-core-25.0"
 echo " [4] bitcoin-core-13.2"
 echo ""
-read -p "Chose version: " chose
+read -p "Chose version (1-4): " chose
 ######### Instalação via Bitcoin.Org Ubuntu #########
 case $chose in
 #
 # Variáveis
-if [[ "$chose" == 1 ]]
+1)
 vers="bitcoin-28.0"
-fi
-if [[ "$chose" == 2 ]]
+;;
+2)
 vers="bitcoin-27.2"
-fi
-if [[ "$chose" == 3 ]];
+;;
+3)
 vers="bitcoin-25.0"
-fi
-if [[ "$chose" == 4 ]];
+;;
+4)
 vers="bitcoin-13.2"
-fi
-else
+;;
+*)
 echo ""
 echo "Opção escolhida não existe!"
-fi
+exit 0
+;;
 #
 echo ""
 echo "Instalando a versão $vers do Bitcoin Core"
