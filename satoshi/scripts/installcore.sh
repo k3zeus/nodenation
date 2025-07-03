@@ -19,12 +19,16 @@ read -P "Chose version: " chose
 
 echo "Instalando a versão 28.0 do Bitcoin Core"
 
+case $chose in
+
 wget -P /root/ -c https://bitcoincore.org/bin/$chose/$chose-x86_64-linux-gnu.tar.gz
 tar xzvf /root/$chose-x86_64-linux-gnu.tar.gz
 sudo install -m 0755 -o root -g root -t /usr/local/bin /root/$chose/bin/*
 rm -r $chose-x86_64-linux-gnu.tar.gz
 
 echo "Configuração do servidor Bitcoin Core - Finalizada"
+
+esac
 
 echo "
 Instalar o Serviço Fulcrum?"
@@ -56,27 +60,27 @@ zmqpubhashblock=tcp://127.0.0.1:8433" >> $chose/bitcoin.conf
 ;;
         2)
 
-        echo "Continuando a instalação sem Fulcrum..."
-echo "#############################################"
-echo "Configure o serviço Bitcoin na Inicialização!
-Execute o comando $crontab -e
-E adicione na ultima linha esse comando:
-@reboot bitcoind -daemon"
-
-echo "#############################################"
-echo "
-Execute o arquivo bitcoin.sh para inicializar seu servidor
-Ou reinicie o seu Node
-"
-
-echo "
-#################
-
-Após essa configuração seu servidor estará instalado
-                e
-   inicializando junto com o sistem
-
-"
+echo "#####################################################"
+echo " Continuando a instalação sem Fulcrum..."
+echo "#####################################################"
+echo ""
+echo "#####################################################"
+echo " Configure o serviço Bitcoin na Inicialização!"
+echo " Execute o comando crontab -e"
+echo " E adicione na ultima linha esse comando: "
+echo " @reboot bitcoind -daemon"
+echo "#####################################################"
+echo ""
+echo "#####################################################"
+echo "######### Execute o arquivo bitcoin.sh para #########"
+echo "############# inicializar seu servidor ##############"
+echo "############## Ou reinicie o seu Node ###############"
+echo ""
+echo "#####################################################"
+echo "Após essa configuração seu servidor estará instalado"
+echo "#                   e                               #"
+echo "######### Inicializando junto com o sistem ##########"
+echo "#####################################################"
 #
 
 exit 0
