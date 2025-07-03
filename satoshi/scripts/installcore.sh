@@ -28,7 +28,7 @@ vers="bitcoin-27.1"
 #$vers="bitcoin-25.0"
 4)
 vers="bitcoin-13.2"
-echo $vers
+echo "Escolheu a opção 4 - $vers"
 ;;
 #
 echo "Instalando a versão $vers do Bitcoin Core"
