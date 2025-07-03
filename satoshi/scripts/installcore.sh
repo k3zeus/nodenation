@@ -10,21 +10,29 @@ echo "###############################"
 echo " [1] bitcoin-core-28.0"
 echo " [2] bitcoin-core-27.2"
 echo " [3] bitcoin-core-25.0"
-
+echo " [4] bitcoin-core-13.2"
+echo ""
 read -p "Chose version: " chose
 ######### Instalação via Bitcoin.Org Ubuntu #########
-1="bitcoin-28.0"
-2="bitcoin-27.1"
-3="bitcoin-25.0"
-
-echo "Instalando a versão 28.0 do Bitcoin Core"
-
 case $chose in
+#
+# Variáveis
+if [[ "$chose" == 1 ]]; then
+$vers="bitcoin-28.0"
+if [[ "$chose" == 2 ]]; then
+$vers="bitcoin-27.1"
+if [[ "$chose" == 3 ]]; then
+$vers="bitcoin-25.0"
+if [[ "$chose" == 4 ]]; then
+$vers="bitcoin-13.2"
+fi
+#
+echo "Instalando a versão $vers do Bitcoin Core"
 
-wget -P /root/ -c https://bitcoincore.org/bin/$chose/$chose-x86_64-linux-gnu.tar.gz
-tar xzvf /root/$chose-x86_64-linux-gnu.tar.gz
-sudo install -m 0755 -o root -g root -t /usr/local/bin /root/$chose/bin/*
-rm -r $chose-x86_64-linux-gnu.tar.gz
+wget -P /root/ -c https://bitcoincore.org/bin/$vers/$vers-x86_64-linux-gnu.tar.gz
+tar xzvf /root/$vers-x86_64-linux-gnu.tar.gz
+sudo install -m 0755 -o root -g root -t /usr/local/bin /root/$vers/bin/*
+rm -r $vers-x86_64-linux-gnu.tar.gz
 
 echo "Configuração do servidor Bitcoin Core - Finalizada"
 
@@ -55,7 +63,7 @@ sudo ufw allow 50001/tcp #comment 'allow Fulcrum TCP from anywhere'
 sudo ufw allow 50002/tcp #comment 'allow Fulcrum SSL from anywhere'
 
 echo "# Enable ZMQ blockhash notification (for Fulcrum)
-zmqpubhashblock=tcp://127.0.0.1:8433" >> $chose/bitcoin.conf
+zmqpubhashblock=tcp://127.0.0.1:8433" >> $vers/bitcoin.conf
 
 ;;
         2)
