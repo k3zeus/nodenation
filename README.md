@@ -3,7 +3,7 @@ Nation of Nodes Project Repository
 #
 There are two installation methods:
 
-Gitclone:
+Method 1 - Gitclone:
 
 Download Menu Script for base instalation:
 
@@ -23,7 +23,8 @@ Execute the Menu:
 $ /root/nodenation/./menu.sh
 
 #
+#
 
-Online Script:
+Method 2 - Online Script:
 
 curl -sS https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/start.sh | bash
