@@ -51,7 +51,7 @@ sudo ufw allow 50001/tcp #comment 'allow Fulcrum TCP from anywhere'
 sudo ufw allow 50002/tcp #comment 'allow Fulcrum SSL from anywhere'
 
 echo "# Enable ZMQ blockhash notification (for Fulcrum)
-zmqpubhashblock=tcp://127.0.0.1:8433" >> bitcoin-28.0/bitcoin.conf
+zmqpubhashblock=tcp://127.0.0.1:8433" >> $chose/bitcoin.conf
 
 ;;
         2)
