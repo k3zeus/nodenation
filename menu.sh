@@ -1,15 +1,15 @@
 #!/bin/bash
 #
-echo "
-Escolha uma opção:
-#"
-echo "1 - Instalar o Halfin Node"
-echo "2 - Instalar o Satoshi Node"
-echo "3 - Instalar o Satoshi Node"
-echo "4 - Instalar o Craig Node"
-echo "5 ou qualquer outra tecla - Sair"
-
-read -p "Digite sua escolha: " escolha
+echo "##################################"
+echo " 1 - Install o Halfin Node"
+echo " 2 - Install o Satoshi Node"
+echo " 3 - Install o Satoshi Node"
+echo " 4 - Install o Craig Node"
+echo " 5 or another option - Out"
+echo "##################################"
+echo ""
+read -p "Choose your pill: " escolha
+echo ""
 
 pasta1="/root/nodenation/"
 
