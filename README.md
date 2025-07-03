@@ -26,4 +26,4 @@ $ /root/nodenation/./menu.sh
 
 Online Script:
 
-curl -sS https://github.com/k3zeus/nodenation/start.sh | bash
+curl -sS https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/start.sh | bash
