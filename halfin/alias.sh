@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Script para renomear interfaces wireless no Ubuntu 25.04
+# Script para renomear interfaces wireless no Ubuntu 25.04 - v.0.03
 # O novo nome será aplicado via regra udev
+
+apt install iw
 
 UDEV_RULES_DIR="/etc/udev/rules.d"
 
