@@ -4,7 +4,7 @@
 echo "Atualizando seu Servidor Ubuntu"
 sudo apt update && sudo apt upgrade
 #
-# Desabilitar serviços não necessários
+# Disabling unnecessary services
 sudo systemctl stop cloud-init
 sudo systemctl disable cloud-init
 sudo systemctl disable --now unattended-upgrades
