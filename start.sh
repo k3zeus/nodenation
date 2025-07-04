@@ -3,7 +3,12 @@
 #
 echo "Atualizando seu Servidor Ubuntu"
 sudo apt update && sudo apt upgrade
-
+#
+# Desabilitar serviços não necessários
+sudo systemctl stop cloud-init
+sudo systemctl disable cloud-init
+sudo systemctl disable --now unattended-upgrades
+#
 apt install net-tools vim htop lm-sensors nmap dos2unix -y
 #
 echo ""
