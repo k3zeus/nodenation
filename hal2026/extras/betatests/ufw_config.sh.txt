@@ -1,0 +1,58 @@
+#!/bin/bash
+#
+# Script para utilização do Firewall UFW - v.0.0.1
+# Com restrições de porta (script em testes, ainda não funcional com AP)
+# Não utilizar
+#
+# Configurações
+BRIDGE_IFACE="br0"
+BRIDGE_NET="10.21.21.0/24"
+WAN_IFACES=("eth0" "wlan1")  # Interfaces WAN
+
+# 1. Habilitar encaminhamento IP persistentemente
+echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/ufw/sysctl.conf
+
+# 2. Configurar arquivos de regras personalizadas do UFW
+for WAN_IFACE in "${WAN_IFACES[@]}"; do
+    # Criar arquivo de configuração para cada interface WAN
+    cat << EOF | sudo tee /etc/ufw/user.rules.d/wan-${WAN_IFACE}.rules
+*nat
+:POSTROUTING ACCEPT [0:0]
+-A POSTROUTING -s ${BRIDGE_NET} -o ${WAN_IFACE} -j MASQUERADE
+COMMIT
+
+*filter
+# Permitir encaminhamento entre bridge e WAN
+-A ufw-before-forward -i ${BRIDGE_IFACE} -o ${WAN_IFACE} -j ACCEPT
+-A ufw-before-forward -i ${WAN_IFACE} -o ${BRIDGE_IFACE} -m state --state RELATED,ESTABLISHED -j ACCEPT
+COMMIT
+EOF
+done
+
+# 3. Configurar before.rules para carregar NAT
+sudo sed -i '/^COMMIT$/i # NAT Configuration' /etc/ufw/before.rules
+for WAN_IFACE in "${WAN_IFACES[@]}"; do
+    sudo sed -i "/^# NAT Configuration/i *nat" /etc/ufw/before.rules
+    sudo sed -i "/^# NAT Configuration/i -A POSTROUTING -s ${BRIDGE_NET} -o ${WAN_IFACE} -j MASQUERADE" /etc/ufw/before.rules
+    sudo sed -i "/^# NAT Configuration/i COMMIT" /etc/ufw/before.rules
+done
+
+# 4. Configurar after.rules para encaminhamento
+echo -e "\n# Bridge forwarding rules" | sudo tee -a /etc/ufw/after.rules
+for WAN_IFACE in "${WAN_IFACES[@]}"; do
+    cat << EOF | sudo tee -a /etc/ufw/after.rules
+-A FORWARD -i ${BRIDGE_IFACE} -o ${WAN_IFACE} -j ACCEPT
+-A FORWARD -i ${WAN_IFACE} -o ${BRIDGE_IFACE} -m state --state RELATED,ESTABLISHED -j ACCEPT
+EOF
+done
+
+# 5. Habilitar políticas padrão de encaminhamento
+sudo ufw default allow routed
+
+# 6. Recarregar configurações UFW
+sudo ufw disable
+sudo ufw --force enable
+
+# 7. Verificar configurações
+sudo ufw status verbose
+sudo iptables -t nat -L -n -v

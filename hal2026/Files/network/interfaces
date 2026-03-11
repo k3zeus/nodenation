@@ -1,0 +1,34 @@
+# Interface loopback
+auto lo
+iface lo inet loopback
+
+# Interface Ethernet (WAN)
+## Debian
+allow-hotplug end0
+iface end0 inet dhcp
+
+## Ubuntu Server
+#allow-hotplug eth0
+#iface eth0 inet dhcp
+
+####################
+# Interface WiFi
+allow-hotplug wlan0
+iface wlan0 inet manual
+
+# Bridge interface
+auto br0
+iface br0 inet static
+    address 10.21.21.1
+    netmask 255.255.255.0
+    bridge_ports wlan0
+    bridge_stp off
+    bridge_fd 0
+    bridge_maxwait 0
+
+#allow-hotplug wlxa047d7306162
+#iface wlxa047d7306162 inet dhcp
+#    wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+allow-hotplug wlan1
+iface wlan1 inet dhcp
+    wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf

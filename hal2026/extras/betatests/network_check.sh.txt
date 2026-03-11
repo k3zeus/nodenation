@@ -1,0 +1,90 @@
+#!/bin/bash
+#
+# Script para checagem de computadores logados na rede (port scan) v.0.1
+#
+# Verifica dependências
+for cmd in nmap ping awk grep; do
+    if ! command -v $cmd &> /dev/null; then
+        echo "Erro: $cmd não instalado. Instale primeiro."
+        exit 1
+    fi
+done
+
+# Configurações
+read -p "Porta SSH para verificar (ENTER para padrão 22): " SSH_PORT
+SSH_PORT=${SSH_PORT:-22}
+
+echo -e "\nSelecione o modo de operação:"
+echo "1) Verificar apenas porta SSH ($SSH_PORT)"
+echo "2) Verificar TODAS as portas abertas em hosts ativos"
+read -p "Opção (1/2): " SCAN_MODE
+
+echo -e "\nSelecione o range de rede:"
+echo "1) Classe A (10.0.0.0/8)"
+echo "2) Classe B (172.16.0.0/12)"
+echo "3) Classe C (192.168.0.0/24)"
+echo "4) Customizado"
+read -p "Opção: " RANGE_TYPE
+
+case $RANGE_TYPE in
+    1) NETWORK="10.0.0.0/8" ;;
+    2) NETWORK="172.16.0.0/12" ;;
+    3) NETWORK="192.168.0.0/24" ;;
+    4)
+        read -p "Digite o range (ex: 192.168.1.0/24): " CUSTOM_NET
+        NETWORK=${CUSTOM_NET}
+        ;;
+    *)
+        echo "Opção inválida!"
+        exit 1
+        ;;
+esac
+
+# Verificação de segurança
+if [[ $NETWORK =~ \/0$ ]] || [[ $NETWORK == "0.0.0.0" ]]; then
+    echo "ERRO: Range muito amplo. Operação cancelada por segurança."
+    exit 1
+fi
+
+# Função para detectar hosts ativos
+detect_hosts() {
+    echo -e "\n[+] Detectando hosts ativos em $NETWORK..."
+    sudo nmap -sn -T4 $NETWORK -oG - | awk '/Up$/{print $2}' > active_hosts.tmp
+    HOST_COUNT=$(wc -l < active_hosts.tmp)
+    echo "Hosts ativos encontrados: $HOST_COUNT"
+}
+
+# Modo 1: Apenas porta SSH
+scan_ssh() {
+    echo -e "\n[+] Verificando porta $SSH_PORT em hosts ativos..."
+    while read -r ip; do
+        (sudo nmap -p $SSH_PORT --open -T4 $ip | grep -q "open") && echo "[+] $ip: Porta $SSH_PORT (SSH) aberta"
+    done < active_hosts.tmp
+}
+
+# Modo 2: Todas as portas
+scan_all_ports() {
+    echo -e "\n[+] Escaneando TODAS as portas em hosts ativos..."
+    while read -r ip; do
+        echo -e "\n[+] Portas abertas em $ip:"
+        sudo nmap -T4 --open $ip | awk '/^[0-9]/{print $1,$2,$3}'
+    done < active_hosts.tmp
+}
+
+# Execução principal
+detect_hosts
+
+if [ $HOST_COUNT -eq 0 ]; then
+    echo "Nenhum host ativo encontrado. Encerrando."
+    exit 0
+fi
+
+case $SCAN_MODE in
+    1) scan_ssh ;;
+    2) scan_all_ports ;;
+    *) echo "Opção inválida!"; exit 1 ;;
+esac
+
+# Limpeza
+rm -f active_hosts.tmp
+echo -e "\n[+] Verificação concluída!"

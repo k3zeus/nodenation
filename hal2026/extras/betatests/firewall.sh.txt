@@ -1,0 +1,40 @@
+#!/bin/bash
+##
+# Configurações do firewall ufw Halfin Node- v.0.1
+# Com restrições de porta (script em testes, ainda não funcional com AP)
+# Não utilizar
+#
+sudo ufw default deny incoming  # Bloqueia todo acesso externo
+sudo ufw default allow outgoing # Permite tráfego de saída
+sudo ufw allow 22/tcp           # SSH (altere para outra porta se possível)
+sudo ufw allow 80/tcp           # Heimdall
+sudo ufw allow 1234/tcp         # Pi-hole
+sudo ufw allow 9090/tcp         # Cockpit
+sudo ufw limit 22/tcp           # Limita tentativas de conexão SSH
+sudo ufw allow 53               # Libera as portas do DNS
+sudo ufw allow 5335             # Libera porta para DNS Pi-Hole
+sudo ufw enable
+
+echo "####################################################"
+echo " ########## Status do Seu Firewall - UFW ###########"
+echo "####################################################"
+echo " "
+
+sudo ufw status verbose
+
+#################### Fail2ban Service ####################
+echo " "
+echo "####################################################"
+echo " ##### Jail Active Service Firewall - Fail2ban #####"
+echo "####################################################"
+echo " "
+sudo apt install fail2ban -y
+sudo cp /etc/fail2ban/jail.{conf,local}
+
+mv /etc/fail2ban/jail.d/defaults-debian.conf /root/ghostnodes/bkps/
+mv /root/nodenation/halfin/extras/defaults-debian.conf /etc/fail2ban/jail.d/defaults-debian.conf
+ 
+sudo systemctl restart fail2ban # Start Service
+
+echo "# Fail2ban is Active #"
+echo ""
