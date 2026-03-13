@@ -58,6 +58,7 @@ sudo find /home/pleb/ -type f -name "*.sh" -print0 | xargs -0 sudo dos2unix
 echo -e  "${CYAN}Changing permition to scripts:${NC} "
 echo -e  ""
 sudo find /home/pleb/ -name "*.sh" -type f -print0 | xargs -0 sudo chmod +x
-
-cd /home/pleb/hal2026/
+#
+mv /home/pleb/nodenation-beta /home/pleb/nodenation
+cd /home/pleb/nodenation/hal2026/
 sudo ./script_orange3.sh
