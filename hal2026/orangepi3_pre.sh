@@ -30,7 +30,7 @@ for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do
 #
 echo "Remoção do usuário Orangepi"
 #
-sudo cd /home/pleb/
+cd /home/pleb/
 sudo rm /lib/systemd/system/getty@.service.d/override.conf
 sudo rm /lib/systemd/system/serial-getty@.service.d/override.conf
 sudo pkill -9 -u orangepi
@@ -58,3 +58,6 @@ sudo find /home/pleb/ -type f -name "*.sh" -print0 | xargs -0 sudo dos2unix
 echo -e  "${CYAN}Changing permition to scripts:${NC} "
 echo -e  ""
 sudo find /home/pleb/ -name "*.sh" -type f -print0 | xargs -0 sudo chmod +x
+
+cd /home/pleb/hal2026/
+sudo ./script_orange3.sh
