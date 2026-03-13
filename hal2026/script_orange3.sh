@@ -2,60 +2,6 @@
 #
 # Script para Orange Pi Zero 3 - Debian Bookworm
 #
-#
-echo "###### Pré-Instalação e Configurações ######"
-
-# Criação do usuário pleb
-sudo adduser --disabled-password --gecos "" pleb
-echo "pleb:Mudar123" | sudo chpasswd
-sudo usermod -aG sudo pleb
-
-cd /home/pleb
-
-echo "
-#### Alteração do Sourcelist APT - Debian original ####
-"
-sudo echo "deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
-#deb-src http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
-
-deb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware
-#deb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware
-
-deb http://deb.debian.org/debian bookworm-backports main contrib non-free non-free-firmware
-#deb http://deb.debian.org/debian bookworm-backports main contrib non-free non-free-firmware
-
-deb http://security.debian.org/debian-security bookworm-security main contrib non-free non-free-firmware
-# deb-src http://security.debian.org/debian-security bookworm-security main contrib non-free non-free-firmware" > /etc/apt/sources.list
-
-rm /etc/apt/sources.list.d/docker.list
-for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done
-#
-echo "Remoção do usuário Orangepi"
-#
-sudo rm /lib/systemd/system/getty@.service.d/override.conf
-sudo rm /lib/systemd/system/serial-getty@.service.d/override.conf
-sudo pkill -9 -u orangepi
-sudo deluser --remove-home orangepi
-#
-echo "##### Atualizando o Sistema #####"
-sudo apt update && sudo apt upgrade -y </dev/tty
-
-echo "##### Instalando as Ferramentas Necessárias #####"
-sudo apt install -y git htop vim net-tools nmap tree lm-sensors dos2unix  openssh-server iptraf-ng hostapd iptables iw traceroute bridge-utils iptables-persistent </dev/tty
-#
-echo -e  "${GREEN}"
-echo -e  "##################################"
-echo -e  "## Welcome to Ghost Node Nation ##"
-echo -e  "##################################${NC}"
-
-echo -e  ""
-echo -e  "${CYAN}Download Github Project${NC}"
-#git clone https://greycitizen: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@github.com/greycitizen/betaghost.git
-sudo find /pleb/halfin/ -type f -name "*.sh" -print0 | xargs -0 sudo dos2unix
-
-echo -e  "${CYAN}Changing permition to scripts:${NC} "
-echo -e  ""
-sudo find /pleb/halfin/ -name "*.sh" -type f -print0 | xargs -0 sudo chmod +x
 # echo "###### Update e Upgrade de firmwares do sistema ######"
 #
 # sudo fwupdmgr refresh
@@ -114,8 +60,8 @@ auto lo
 iface lo inet loopback
 
 # Interface Ethernet (WAN)
-allow-hotplug eth0
-iface eth0 inet dhcp
+allow-hotplug end0
+iface end0 inet dhcp
 
 # Interface WiFi
 allow-hotplug wlan0
@@ -138,21 +84,7 @@ sudo systemctl restart networking
 
 }
 
-############ Configuração DNSMASQ - Não necessária para Pi-Hole Server ###############
-configurar_dnsmasq() {
-    echo "[INFO] Configurando dnsmasq para DHCP na bridge..."
-#
-#    systemctl stop dnsmasq
-    cat <<EOF > "$DNSMASQ_CONF"
-interface=$BRIDGE_IFACE
-bind-interfaces
-dhcp-range=$DHCP_START,$DHCP_END,$NETMASK,12h
-server=8.8.8.8
-EOF
-#    systemctl enable dnsmasq
-#    systemctl restart dnsmasq
-}
-############### DNSMASQ - End of configuration ##################
+######## HOSTAPD Wi-Fi Interno ##########
 
 configurar_hostapd() {
     echo "[INFO] Criando configuração WPA2 do hostapd..."
@@ -263,9 +195,9 @@ main
 echo 1 > /proc/sys/net/ipv4/ip_forward
 
 # Detectar interface WAN (se necessário)
-WAN_IFACE=$(ip route | grep default | awk '{print $5}')
+#WAN_IFACE=$(ip route | grep default | awk '{print $5}')
 
-#WAN_IFACE=wan1
+WAN_IFACE=wan1
 # Reaplicar regras NAT
 sudo iptables -t nat -F
 sudo iptables -F
@@ -286,19 +218,18 @@ EOF
 sudo chmod +x /etc/network/if-up.d/iptables
 
 #######################################
-# Pi-hole Instalation Script
-/pleb/halfin/extras/./pi-hole.sh </dev/tty
+# fail2ban Instalation Script
+/pleb/hal2026/extras/./fail2ban.sh </dev/tty
 
 #######################################
+# Pi-hole Instalation Script
+/pleb/hal2026/extras/./pi-hole.sh </dev/tty
+
 #######################################
 # Docker Instalation Script
-/pleb/halfin/extras/./docker.sh </dev/tty
+/pleb/hal2026/extras/./docker.sh </dev/tty
 
 #######################################
-#######################################
-# fail2ban Instalation Script
-/pleb/halfin/extras/./fail2ban.sh </dev/tty
-
 #######################################
 echo "##### criando Aliases #####"
 echo '# Agora ls é colorido, frufru.
@@ -326,17 +257,10 @@ alias root="sudo -i"
 #
 ' >> $HOME/.bash_aliases
 
-echo ""
-echo "##### Caso queira voltar a instalação digite: sudo /root/$newfolder/menu.sh ######"
-echo ""
-
-#mv /root/betaghost/halfin /home/pleb/
-chown -R pleb:pleb /home/pleb/halfin
-rm -r /pleb/halfin/
+chown -R pleb:pleb /home/pleb/nodenation
+rm -r /pleb/nodenation/
 
 #echo "###### Atualizando ########"
 echo "Execute: source .bashrc"
-
-sudo reboot now
 
 exit 0
