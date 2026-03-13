@@ -42,7 +42,7 @@ echo "##### Atualizando o Sistema #####"
 sudo apt update && sudo apt upgrade -y
 
 echo "##### Instalando as Ferramentas Necessárias #####"
-sudo apt install -y git htop vim net-tools nmap tree lm-sensors dos2unix  openssh-server iptraf-ng hostapd iptables iw traceroute bridge-utils iptables-persistent
+sudo apt install -y git htop vim net-tools nmap tree lm-sensors dos2unix  openssh-server iptraf-ng hostapd iptables iw traceroute bridge-utils iptables-persistent </dev/tty
 #
 echo -e  "${GREEN}"
 echo -e  "##################################"
