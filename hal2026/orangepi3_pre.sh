@@ -36,6 +36,8 @@ sudo rm /lib/systemd/system/serial-getty@.service.d/override.conf
 sudo pkill -9 -u orangepi
 sudo deluser --remove-home orangepi
 #
+sudo echo "halfin" > /etc/hostname
+#
 echo "##### Atualizando o Sistema #####"
 sudo apt update && sudo apt upgrade -y
 
