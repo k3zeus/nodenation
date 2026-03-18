@@ -258,6 +258,8 @@ alias root="sudo -i"
 ' >> $HOME/.bash_aliases
 
 chown -R pleb:pleb /home/pleb/nodenation
+mv /home/pleb/nodenation/hal2026 /home/pleb/
+mv /home/pleb/nodenation/satoshi /home/pleb/
 rm -r /pleb/nodenation/
 
 #echo "###### Atualizando ########"
