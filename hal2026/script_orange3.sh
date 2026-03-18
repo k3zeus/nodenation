@@ -219,15 +219,15 @@ sudo chmod +x /etc/network/if-up.d/iptables
 
 #######################################
 # fail2ban Instalation Script
-/pleb/nodenation/hal2026/extras/./fail2ban.sh </dev/tty
+/home/pleb/nodenation/hal2026/extras/./fail2ban.sh </dev/tty
 
 #######################################
 # Pi-hole Instalation Script
-/pleb/nodenation/hal2026/extras/./pi-hole.sh </dev/tty
+/home/pleb/nodenation/hal2026/extras/./pi-hole.sh </dev/tty
 
 #######################################
 # Docker Instalation Script
-/pleb/nodenation/hal2026/extras/./docker.sh </dev/tty
+/home/pleb/nodenation/hal2026/extras/./docker.sh </dev/tty
 
 #######################################
 #######################################
