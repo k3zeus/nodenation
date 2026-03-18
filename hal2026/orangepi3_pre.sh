@@ -1,7 +1,12 @@
-# Script de pré-instalação do Node Halfin - v0.1 - 13032026
+#!/bin/bash
+# Script de pré-instalação do Node Halfin - v0.12 - 18032026
 #
 # Script para Orange Pi Zero 3 - Debian Bookworm
 #
+    if [ "$EUID" -ne 0 ]; then
+        echo "[ERRO] Este script precisa ser executado como root."
+        exit 1
+    fi
 #
 echo "###### Pré-Instalação e Configurações ######"
 
@@ -27,8 +32,6 @@ deb http://security.debian.org/debian-security bookworm-security main contrib no
 
 rm /etc/apt/sources.list.d/docker.list
 for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done
-#
-echo "Remoção do usuário Orangepi"
 #
 cd /home/pleb/
 sudo echo "halfin" > /etc/hostname
@@ -58,6 +61,13 @@ mv /home/pleb/nodenation-beta /home/pleb/nodenation
 cd /home/pleb/nodenation/hal2026/
 #
 # Remoção do usuário "orangepi"
+#
+echo "############## Caso perca a conexão, reconecte com o usuário 'pleb' ##############"
+echo ""
+echo "###### E execute: 'sudo /home/pleb/nodenation/hal2026/./script_orange3.sh' ######"
+echo ""
+#
+echo "###### Remoção do usuário Orangepi ######"
 sudo rm /lib/systemd/system/getty@.service.d/override.conf
 sudo rm /lib/systemd/system/serial-getty@.service.d/override.conf
 sudo pkill -9 -u orangepi
