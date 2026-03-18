@@ -31,11 +31,6 @@ for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do
 echo "Remoção do usuário Orangepi"
 #
 cd /home/pleb/
-sudo rm /lib/systemd/system/getty@.service.d/override.conf
-sudo rm /lib/systemd/system/serial-getty@.service.d/override.conf
-sudo pkill -9 -u orangepi
-sudo deluser --remove-home orangepi
-#
 sudo echo "halfin" > /etc/hostname
 #
 echo "##### Atualizando o Sistema #####"
@@ -61,4 +56,11 @@ sudo find /home/pleb/ -name "*.sh" -type f -print0 | xargs -0 sudo chmod +x
 #
 mv /home/pleb/nodenation-beta /home/pleb/nodenation
 cd /home/pleb/nodenation/hal2026/
+#
+# Remoção do usuário "orangepi"
+sudo rm /lib/systemd/system/getty@.service.d/override.conf
+sudo rm /lib/systemd/system/serial-getty@.service.d/override.conf
+sudo pkill -9 -u orangepi
+sudo deluser --remove-home orangepi
+#
 sudo ./script_orange3.sh
