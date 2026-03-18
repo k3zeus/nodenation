@@ -1,3 +1,4 @@
+#!/bin/sh
 # Script de instalação do Node Halfin - v0.7 /23092025
 #
 # Script para Orange Pi Zero 3 - Debian Bookworm
@@ -5,13 +6,13 @@
 # echo "###### Update e Upgrade de firmwares do sistema ######"
 #
 # sudo fwupdmgr refresh
-#
 # Update
 # sudo fwupdmgr update -y
+#
 # Remove Dnsmasq-base
 sudo apt remove dnsmasq-base -y
 ############ Sistema de Wifi e Rede Lan ##############
-#/root/nodenation/halfin/./alias.sh
+/home/pleb/nodenation/hal2026/./alias.sh
 # Access Point com WPA2, bridge br0 e Netplan - Ubuntu 25.04
 
 SSID="Halfin"
