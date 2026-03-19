@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Script para instalação assistida do Servidor Pi-Hole + Unbound - Halfin Node- v.0.2
+# Script para instalação assistida do Servidor Pi-Hole + Unbound - Halfin Node- v.0.3 18032026
 #
 echo "#########################################"
 echo "######## Pi-Hole - DNS Server ###########"
@@ -8,11 +8,11 @@ echo "#########################################"
 
 sudo apt purge dnsmasq -y
 
-curl -sSL https://install.pi-hole.net | sudo bash
-
 sudo apt install unbound -y
 
 wget https://www.internic.net/domain/named.root -qO- | sudo tee /var/lib/unbound/root.hints
+
+curl -sSL https://install.pi-hole.net | sudo bash
 
 touch /etc/unbound/unbound.conf.d/pi-hole.conf
 
@@ -98,7 +98,7 @@ edns-packet-max=1232" >> /etc/dnsmasq.d/99-edns.conf
 sudo service unbound restart
 
 mv /etc/pihole/pihole.toml /etc/pihole/pihole.toml.bkp
-mv /root/halfin/extras/pihole.toml /etc/pihole/
+mv /home/pleb/halfin/Files/pihole/pihole.toml /etc/pihole/
 
 echo ""
 echo "#########################################"
