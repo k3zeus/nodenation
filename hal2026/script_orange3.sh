@@ -1,5 +1,5 @@
 #!/bin/sh
-# Script de instalação do Node Halfin - v0.7 /23092025
+# Script de instalação do Node Halfin - v0.8 13032026
 #
 # Script para Orange Pi Zero 3 - Debian Bookworm
 #
@@ -10,7 +10,7 @@
 # sudo fwupdmgr update -y
 #
 # Remove Dnsmasq-base
-sudo apt remove dnsmasq-base -y
+#sudo apt remove dnsmasq-base -y
 ############ Sistema de Wifi e Rede Lan ##############
 /home/pleb/nodenation/hal2026/./alias.sh
 # Access Point com WPA2, bridge br0 e Netplan - Ubuntu 25.04
@@ -48,7 +48,6 @@ detectar_wan() {
     echo "[ERRO] Nenhuma interface WAN ativa encontrada (end0 ou wlan1)."
     exit 1
 }
-WAN_IFACE="end0"
 
 configurar_bridge() {
     echo "[INFO] Gerando configuração bridge $BRIDGE_IFACE..."
@@ -197,8 +196,8 @@ echo 1 > /proc/sys/net/ipv4/ip_forward
 
 # Detectar interface WAN (se necessário)
 #WAN_IFACE=$(ip route | grep default | awk '{print $5}')
-
 WAN_IFACE=wan1
+
 # Reaplicar regras NAT
 sudo iptables -t nat -F
 sudo iptables -F
@@ -228,7 +227,7 @@ sudo chmod +x /etc/network/if-up.d/iptables
 
 #######################################
 # Docker Instalation Script
-/home/pleb/nodenation/hal2026/extras/./docker.sh </dev/tty
+/home/pleb/nodenation/hal2026/docker/./docker.sh </dev/tty
 
 #######################################
 #######################################
@@ -259,7 +258,7 @@ alias root="sudo -i"
 ' >> $HOME/.bash_aliases
 
 chown -R pleb:pleb /home/pleb/nodenation
-mv /home/pleb/nodenation/hal2026 /home/pleb/
+mv /home/pleb/nodenation/hal2026/ /home/pleb/halfin/
 mv /home/pleb/nodenation/satoshi /home/pleb/
 rm -r /pleb/nodenation/
 
