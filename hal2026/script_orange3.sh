@@ -260,7 +260,7 @@ alias root="sudo -i"
 chown -R pleb:pleb /home/pleb/nodenation
 mv /home/pleb/nodenation/hal2026/ /home/pleb/halfin/
 mv /home/pleb/nodenation/satoshi /home/pleb/
-rm -r /pleb/nodenation/
+rm -r /home/pleb/nodenation/
 
 #echo "###### Atualizando ########"
 echo "Execute: source .bashrc"
