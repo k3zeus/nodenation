@@ -12,8 +12,6 @@ sudo apt install unbound -y
 
 wget https://www.internic.net/domain/named.root -qO- | sudo tee /var/lib/unbound/root.hints
 
-curl -sSL https://install.pi-hole.net | sudo bash
-
 touch /etc/unbound/unbound.conf.d/pi-hole.conf
 
 echo "server:
@@ -88,12 +86,23 @@ echo "server:
 
 sudo service unbound restart
 
+#
+# Criação do resolv.conf e bloqueiode alteração
+echo "nameserver 127.0.0.1" | sudo tee /etc/resolv.conf
+# Opcional: Tornar imutável para evitar sobrescrita
+sudo chattr +i /etc/resolv.conf
+#
+
 dig pi-hole.net @127.0.0.1 -p 5335
 
 touch /etc/dnsmasq.d/99-edns.conf
 
 echo "
 edns-packet-max=1232" >> /etc/dnsmasq.d/99-edns.conf
+
+# Instalação do Pi-Hole
+curl -sSL https://install.pi-hole.net | sudo bash
+#
 
 sudo service unbound restart
 
