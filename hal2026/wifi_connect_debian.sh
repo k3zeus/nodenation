@@ -1,5 +1,7 @@
 #!/bin/bash
-
+#
+# WiFi Connect Script - Wireless Interface and Scan Network - Ghost Nodes v0.2 18032026
+#
 # Configurações
 CONFIG_DIR="/etc/wifi_config"
 NETWORK_INTERFACES="/etc/network/interfaces"
