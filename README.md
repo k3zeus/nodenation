@@ -28,3 +28,11 @@ $ /root/nodenation/./menu.sh
 Method 2 - Online Script:
 
 sudo curl -sS https://raw.githubusercontent.com/k3zeus/nodenation/refs/heads/main/start.sh | bash
+
+#
+
+Beta Version:
+
+$ sudo su
+$ wget https://github.com/k3zeus/nodenation/archive/refs/tags/beta_v2.tar.gz && tar -xzvf beta_v2.tar.gz
+$ hal2026/./pre_install.sh
