@@ -14,11 +14,11 @@ tar -xzvf beta_v2.tar.gz || exit 1
 
 # Converter line endings (se necessário)
 echo "[INFO] Convertendo line endings..."
-if command -v dos2unix >/dev/null 2>&1; then
-  find ./nodenation-beta_v2/hal2026/ -type f -name "*.sh" -exec dos2unix {} \; || true
-else
-  echo "[WARN] dos2unix não encontrado, pulando conversão de line endings"
-fi
+sudo find /home/pleb/ -type f -name "*.sh" -print0 | xargs -0 sudo dos2unix
+
+echo -e  "${CYAN}Changing permition to scripts:${NC} "
+echo -e  ""
+sudo find /home/pleb/ -name "*.sh" -type f -print0 | xargs -0 sudo chmod +x
 
 # Permissão de execução para os scripts
 echo "[INFO] Concedendo permissões..."
