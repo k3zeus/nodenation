@@ -1,3 +1,6 @@
+#
+# Sistema Wireless - Sqlite3 | Ghost Nodes v0.3 18032026
+#
 wpa_import.sh — Importa senhas do wpa_supplicant
 
 Lê todos os blocos network={...} do arquivo .conf
