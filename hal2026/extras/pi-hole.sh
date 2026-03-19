@@ -98,7 +98,7 @@ edns-packet-max=1232" >> /etc/dnsmasq.d/99-edns.conf
 sudo service unbound restart
 
 mv /etc/pihole/pihole.toml /etc/pihole/pihole.toml.bkp
-mv /home/pleb/halfin/Files/pihole/pihole.toml /etc/pihole/
+cp /home/pleb/halfin/Files/pihole/pihole.toml /etc/pihole/
 
 echo ""
 echo "#########################################"
