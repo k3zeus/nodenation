@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # ╔══════════════════════════════════════════════════════════════╗
-# ║       Halfin Install — Ghost Node Nation  v0.4               ║
+# ║       Halfin Install — Ghost Node Nation  v0.5               ║
 # ║       20/03/2026                                             ║
 # ╚══════════════════════════════════════════════════════════════╝
 #
@@ -75,7 +75,7 @@ header() {
     echo "  ║          ╚██████╔╝██║░░██║╚█████╔╝██████╔╝░░░██║░░           ║"
     echo "  ║           ╚═════╝ ╚═╝  ╚═╝ ╚════╝ ╚═════╝    ╚═╝             ║"
     echo "  ║                                                              ║"
-    echo "  ║              Ghost Node Nation  —  Install v0.4              ║"
+    echo "  ║              Ghost Node Nation  —  Install v0.5              ║"
     echo "  ║                    OrangePi Zero 3 / Debian                  ║"
     echo "  ║                                                              ║"
     echo "  ╚══════════════════════════════════════════════════════════════╝"
@@ -471,25 +471,143 @@ etapa3() {
           iptraf-ng hostapd iptables iw traceroute bridge-utils iptables-persistent \
           btop sqlite3 ca-certificates curl gnupg lsb-release"
 
+    # ── Função: executa apt com tratamento de erro e recuperação ─────────────
+    apt_run() {
+        local DESC="$1"; shift
+        local RC=0
+
+        # Desativa set -e localmente para capturar o erro manualmente
+        set +e
+        DEBIAN_FRONTEND=noninteractive "$@" 2>&1 | while IFS= read -r line; do
+            # Destaca erros e avisos no output
+            if echo "$line" | grep -qiE "^E:|error|fatal"; then
+                printf "  ${RED}%s${RESET}\n" "$line"
+            elif echo "$line" | grep -qiE "^W:|warning"; then
+                printf "  ${YELLOW}%s${RESET}\n" "$line"
+            else
+                printf "  ${DIM}%s${RESET}\n" "$line"
+            fi
+        done
+        RC=${PIPESTATUS[0]}
+        set -e
+        return $RC
+    }
+
+    # ── Função: tenta recuperar dpkg quebrado ────────────────────────────────
+    dpkg_recover() {
+        echo ""
+        step_warn "Tentando recuperar estado do dpkg..."
+
+        set +e
+
+        # Força configuração dos pacotes pendentes
+        dpkg --configure -a 2>&1 | while IFS= read -r line; do
+            printf "  ${DIM}%s${RESET}\n" "$line"
+        done
+
+        # Corrige dependências quebradas
+        DEBIAN_FRONTEND=noninteractive apt-get install -f -y 2>&1 | while IFS= read -r line; do
+            printf "  ${DIM}%s${RESET}\n" "$line"
+        done
+
+        set -e
+
+        # Verifica se dpkg está operacional
+        if dpkg --audit 2>&1 | grep -q "packages"; then
+            step_warn "dpkg ainda reporta pacotes inconsistentes — verifique o hardware"
+            return 1
+        else
+            step_ok "dpkg recuperado com sucesso"
+            return 0
+        fi
+    }
+
+    # ── Verifica saúde do dpkg antes de começar ───────────────────────────────
+    step_info "Verificando integridade do dpkg..."
+    set +e
+    DPKG_AUDIT=$(dpkg --audit 2>&1)
+    DPKG_RC=$?
+    set -e
+
+    if [ -n "$DPKG_AUDIT" ]; then
+        step_warn "dpkg reporta inconsistências:"
+        echo "$DPKG_AUDIT" | sed 's/^/    /'
+        echo ""
+        step_info "Executando recuperação automática antes de continuar..."
+        dpkg_recover || {
+            step_err "Não foi possível recuperar o dpkg automaticamente."
+            echo ""
+            printf "  ${YELLOW}Sugestões:${RESET}\n"
+            printf "  ${DIM}1. Verifique o cartão SD/eMMC (dmesg | grep -i error)${RESET}\n"
+            printf "  ${DIM}2. Execute: sudo dpkg --configure -a${RESET}\n"
+            printf "  ${DIM}3. Execute: sudo apt-get install -f${RESET}\n"
+            echo ""
+            if ! confirm "Tentar continuar mesmo assim?"; then
+                press_enter; show_menu; return
+            fi
+        }
+    else
+        step_ok "dpkg íntegro"
+    fi
+
+    echo ""
+
     # ── apt update ────────────────────────────────────────────────────────────
     step_info "Atualizando lista de pacotes (apt update)..."
     echo ""
-    apt-get update 2>&1 | while IFS= read -r line; do
-        printf "  ${DIM}%s${RESET}\n" "$line"
-    done
-    step_ok "Lista de pacotes atualizada"
+    RC_UPDATE=0
+    apt_run "apt update" apt-get update || RC_UPDATE=$?
+
+    if [ "$RC_UPDATE" -ne 0 ]; then
+        step_warn "apt update retornou erro (código $RC_UPDATE) — continuando mesmo assim"
+    else
+        step_ok "Lista de pacotes atualizada"
+    fi
     echo ""
 
     # ── apt upgrade ───────────────────────────────────────────────────────────
-    UPGRADABLE=$(apt list --upgradable 2>/dev/null | grep -c "upgradable" || true)
+    set +e
+    UPGRADABLE=$(apt list --upgradable 2>/dev/null | grep -c "/" || true)
+    set -e
+
     if [ "$UPGRADABLE" -gt 0 ]; then
         step_info "${UPGRADABLE} pacote(s) com atualização disponível"
         if confirm "Executar upgrade completo do sistema? (recomendado)"; then
             echo ""
-            DEBIAN_FRONTEND=noninteractive apt-get upgrade -y 2>&1 | while IFS= read -r line; do
-                printf "  ${DIM}%s${RESET}\n" "$line"
-            done
-            step_ok "Sistema atualizado"
+            RC_UPG=0
+            apt_run "apt upgrade" apt-get upgrade -y || RC_UPG=$?
+
+            if [ "$RC_UPG" -ne 0 ]; then
+                echo ""
+                step_warn "apt upgrade retornou erro (código $RC_UPG)"
+
+                # Verifica se é erro de I/O (fsync / Input/output error)
+                if dmesg 2>/dev/null | tail -50 | grep -qiE "i/o error|mmc|blk_update_request"; then
+                    echo ""
+                    step_err "Erro de I/O detectado no hardware (cartão SD/eMMC):"
+                    dmesg 2>/dev/null | tail -20 | grep -iE "i/o error|mmc|blk_update" \
+                        | sed 's/^/    /'
+                    echo ""
+                    printf "  ${YELLOW}${BOLD}O erro 'unable to fsync / Input/output error' indica${RESET}\n"
+                    printf "  ${YELLOW}falha de escrita no cartão SD ou eMMC.${RESET}\n"
+                    printf "  ${DIM}Isso não é um bug do script — é um problema de hardware.${RESET}\n"
+                    echo ""
+                    printf "  ${BOLD}O que fazer:${RESET}\n"
+                    printf "  ${DIM}1. Reinicie o sistema e tente novamente (pode ser transitório)${RESET}\n"
+                    printf "  ${DIM}2. Verifique o cartão SD com: fsck -n /dev/mmcblk0p1${RESET}\n"
+                    printf "  ${DIM}3. Substitua o cartão SD se o erro persistir${RESET}\n"
+                    echo ""
+                fi
+
+                # Tenta recuperar e continuar
+                dpkg_recover || true
+
+                if ! confirm "Continuar para instalação dos pacotes mesmo com o erro do upgrade?"; then
+                    press_enter; show_menu; return
+                fi
+            else
+                step_ok "Sistema atualizado"
+            fi
         fi
     else
         step_ok "Sistema já está atualizado"
@@ -497,30 +615,66 @@ etapa3() {
 
     echo ""
 
-    # ── Verifica quais pacotes faltam ─────────────────────────────────────────
-    step_info "Verificando pacotes necessários..."
-    MISSING=""
+    # ── Instala pacotes — um por vez para isolar falhas ───────────────────────
+    step_info "Verificando e instalando pacotes necessários..."
+    echo ""
+
+    PKG_OK=0
+    PKG_FAIL=0
+    PKG_FAIL_LIST=""
+
     for pkg in $PKGS; do
-        if ! dpkg -l "$pkg" &>/dev/null; then
-            MISSING="$MISSING $pkg"
+        # Verifica se já está instalado e funcional
+        if dpkg -l "$pkg" 2>/dev/null | grep -q "^ii"; then
+            printf "  ${DIM}[já instalado]${RESET}  %s\n" "$pkg"
+            PKG_OK=$((PKG_OK + 1))
+            continue
+        fi
+
+        # Tenta instalar individualmente
+        printf "  ${ARROW} Instalando ${BOLD}%s${RESET}...\n" "$pkg"
+        RC_PKG=0
+        set +e
+        DEBIAN_FRONTEND=noninteractive apt-get install -y "$pkg" \
+            2>&1 | tail -5 | while IFS= read -r line; do
+                if echo "$line" | grep -qiE "^E:|error|fatal"; then
+                    printf "    ${RED}%s${RESET}\n" "$line"
+                else
+                    printf "    ${DIM}%s${RESET}\n" "$line"
+                fi
+            done
+        RC_PKG=${PIPESTATUS[0]}
+        set -e
+
+        if [ "$RC_PKG" -eq 0 ]; then
+            printf "  ${CHECK} ${GREEN}%s${RESET} instalado\n" "$pkg"
+            PKG_OK=$((PKG_OK + 1))
+        else
+            printf "  ${CROSS} ${RED}%s${RESET} falhou (código $RC_PKG)\n" "$pkg"
+            PKG_FAIL=$((PKG_FAIL + 1))
+            PKG_FAIL_LIST="$PKG_FAIL_LIST $pkg"
+
+            # Tenta recuperar dpkg após falha antes do próximo pacote
+            set +e
+            dpkg --configure -a 2>/dev/null
+            apt-get install -f -y 2>/dev/null
+            set -e
         fi
     done
 
-    if [ -z "$MISSING" ]; then
-        step_ok "Todos os pacotes já estão instalados"
-    else
+    echo ""
+    sep
+    printf "  ${CHECK} Instalados com sucesso : ${GREEN}${BOLD}%d${RESET}\n" "$PKG_OK"
+
+    if [ "$PKG_FAIL" -gt 0 ]; then
+        printf "  ${CROSS} Falharam               : ${RED}${BOLD}%d${RESET} —${YELLOW}%s${RESET}\n" \
+               "$PKG_FAIL" "$PKG_FAIL_LIST"
         echo ""
-        step_warn "Pacotes a instalar:${YELLOW}${MISSING}${RESET}"
-        echo ""
-        if confirm "Instalar os pacotes ausentes?"; then
-            echo ""
-            DEBIAN_FRONTEND=noninteractive apt-get install -y $MISSING 2>&1 | while IFS= read -r line; do
-                printf "  ${DIM}%s${RESET}\n" "$line"
-            done
-            echo ""
-            step_ok "Ferramentas instaladas"
-        else
-            step_warn "Instalação de pacotes pulada — pode causar falhas nas etapas seguintes"
+        step_warn "Alguns pacotes não foram instalados."
+        step_info "Você pode tentar novamente executando a etapa 3 pelo menu."
+
+        if ! confirm "Marcar etapa 3 como concluída mesmo com falhas?"; then
+            press_enter; show_menu; return
         fi
     fi
 
