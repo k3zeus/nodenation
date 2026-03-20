@@ -12,7 +12,7 @@
 # Remove Dnsmasq-base
 #sudo apt remove dnsmasq-base -y
 ############ Sistema de Wifi e Rede Lan ##############
-/home/pleb/nodenation/hal2026/./alias.sh
+./alias.sh
 # Access Point com WPA2, bridge br0 e Netplan - Ubuntu 25.04
 
 SSID="Halfin"
@@ -80,7 +80,7 @@ iface br0 inet static
 EOF
 
 echo "Reiniciando os serviços de rede..."
-sudo systemctl restart networking
+#sudo systemctl restart networking
 
 }
 
@@ -176,7 +176,7 @@ finalizar() {
 
 main() {
     check_root
-    #detectar_wan
+    detectar_wan
     configurar_bridge
     configurar_dnsmasq
     configurar_hostapd
@@ -192,42 +192,46 @@ main
 ##### Criação das regras Firewall #####
 
 # IP Forwarding
-echo 1 > /proc/sys/net/ipv4/ip_forward
+#echo 1 > /proc/sys/net/ipv4/ip_forward
 
 # Detectar interface WAN (se necessário)
 #WAN_IFACE=$(ip route | grep default | awk '{print $5}')
-WAN_IFACE=wan1
+#WAN_IFACE=wan1
 
 # Reaplicar regras NAT
-sudo iptables -t nat -F
-sudo iptables -F
+#sudo iptables -t nat -F
+#sudo iptables -F
 
-sudo iptables -t nat -A POSTROUTING -o "$WAN_IFACE" -j MASQUERADE
-sudo iptables -A FORWARD -i "$WAN_IFACE" -o br0 -m state --state RELATED,ESTABLISHED -j ACCEPT
-sudo iptables -A FORWARD -i br0 -o "$WAN_IFACE" -j ACCEPT
+#sudo iptables -t nat -A POSTROUTING -o "$WAN_IFACE" -j MASQUERADE
+#sudo iptables -A FORWARD -i "$WAN_IFACE" -o br0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+#sudo iptables -A FORWARD -i br0 -o "$WAN_IFACE" -j ACCEPT
 
 # Salvar regras para persistência
-sudo iptables-save > /etc/iptables.rules
+#sudo iptables-save > /etc/iptables.rules
 
 # Criar script de restauração em boot
-cat <<EOF | sudo tee /etc/network/if-up.d/iptables
+#cat <<EOF | sudo tee /etc/network/if-up.d/iptables
 #!/bin/sh
-iptables-restore < /etc/iptables.rules
-EOF
+#iptables-restore < /etc/iptables.rules
+#EOF
 
-sudo chmod +x /etc/network/if-up.d/iptables
+#sudo chmod +x /etc/network/if-up.d/iptables
 
 #######################################
 # fail2ban Instalation Script
-/home/pleb/nodenation/hal2026/extras/./fail2ban.sh </dev/tty
+extras/./fail2ban.sh </dev/tty
 
 #######################################
 # Pi-hole Instalation Script
-/home/pleb/nodenation/hal2026/extras/./pi-hole.sh </dev/tty
+extras/./pi-hole.sh </dev/tty
 
 #######################################
 # Docker Instalation Script
-/home/pleb/nodenation/hal2026/docker/./docker.sh </dev/tty
+docker/./docker.sh </dev/tty
+
+#######################################
+# Routing Network Script
+./routing.sh </dev/tty
 
 #######################################
 #######################################
@@ -257,10 +261,7 @@ alias root="sudo -i"
 #
 ' >> $HOME/.bash_aliases
 
-chown -R pleb:pleb /home/pleb/nodenation
-mv /home/pleb/nodenation/hal2026/ /home/pleb/halfin/
-mv /home/pleb/nodenation/satoshi /home/pleb/
-rm -r /home/pleb/nodenation/
+chown -R pleb:pleb /home/pleb/
 
 #echo "###### Atualizando ########"
 echo "Execute: source .bashrc"
