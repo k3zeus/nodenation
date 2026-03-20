@@ -1,9 +1,12 @@
 #!/bin/bash
 #
 # ╔══════════════════════════════════════════════════════════════╗
-# ║       Halfin Install — Ghost Node Nation  v0.3              ║
-# ║       20/03/2026                                            ║
+# ║       Halfin Install — Ghost Node Nation  v0.4               ║
+# ║       20/03/2026                                             ║
 # ╚══════════════════════════════════════════════════════════════╝
+#
+# Uso direto : sudo bash install.sh
+# Via curl   : curl -fsSL https://<url>/install.sh | sudo bash
 #
 # Etapas:
 #   1. Verificação de hardware e usuário (OrangePi Zero 3 / Debian arm64)
@@ -12,6 +15,30 @@
 #   4. Download e preparação do projeto Ghost Nodes
 #   5. Remoção do usuário orangepi
 #
+
+# ══════════════════════════════════════════════════════════════════════════════
+# BOOTSTRAP — detecta execução via pipe (curl | bash) e se re-executa com TTY
+# ══════════════════════════════════════════════════════════════════════════════
+# Quando stdin NÃO é um TTY, estamos sendo lidos via pipe do curl.
+# Salvamos o script em disco e reiniciamos vinculando stdin ao terminal real,
+# para que read/menus funcionem normalmente.
+SELFPATH="/tmp/halfin_install.sh"
+
+if [ ! -t 0 ]; then
+    cat > "$SELFPATH"
+    chmod +x "$SELFPATH"
+
+    if [ "$EUID" -ne 0 ]; then
+        echo ""
+        echo "  [ERRO] Execute como root: curl -fsSL <url>/install.sh | sudo bash"
+        echo ""
+        rm -f "$SELFPATH"
+        exit 1
+    fi
+
+    # Re-executa com TTY real como stdin
+    exec bash "$SELFPATH" < /dev/tty
+fi
 
 set -euo pipefail
 
@@ -41,15 +68,15 @@ header() {
     printf "${BOLD}${CYAN}"
     echo "  ╔══════════════════════════════════════════════════════════════╗"
     echo "  ║                                                              ║"
-    echo "  ║          ░██████╗░██╗░░██╗░█████╗░░██████╗████████╗         ║"
-    echo "  ║          ██╔════╝░██║░░██║██╔══██╗██╔════╝╚══██╔══╝         ║"
-    echo "  ║          ██║░░██╗░███████║██║░░██║╚█████╗░░░░██║░░          ║"
-    echo "  ║          ██║░░╚██╗██╔══██║██║░░██║░╚═══██╗░░░██║░░          ║"
-    echo "  ║          ╚██████╔╝██║░░██║╚█████╔╝██████╔╝░░░██║░░          ║"
-    echo "  ║           ╚═════╝ ╚═╝  ╚═╝ ╚════╝ ╚═════╝    ╚═╝           ║"
+    echo "  ║          ░██████╗░██╗░░██╗░█████╗░░██████╗████████╗          ║"
+    echo "  ║          ██╔════╝░██║░░██║██╔══██╗██╔════╝╚══██╔══╝          ║"
+    echo "  ║          ██║░░██╗░███████║██║░░██║╚█████╗░░░░██║░░           ║"
+    echo "  ║          ██║░░╚██╗██╔══██║██║░░██║░╚═══██╗░░░██║░░           ║"
+    echo "  ║          ╚██████╔╝██║░░██║╚█████╔╝██████╔╝░░░██║░░           ║"
+    echo "  ║           ╚═════╝ ╚═╝  ╚═╝ ╚════╝ ╚═════╝    ╚═╝             ║"
     echo "  ║                                                              ║"
-    echo "  ║              Ghost Node Nation  —  Install v0.3             ║"
-    echo "  ║                    OrangePi Zero 3 / Debian                 ║"
+    echo "  ║              Ghost Node Nation  —  Install v0.3              ║"
+    echo "  ║                    OrangePi Zero 3 / Debian                  ║"
     echo "  ║                                                              ║"
     echo "  ╚══════════════════════════════════════════════════════════════╝"
     printf "${RESET}\n"
@@ -125,12 +152,10 @@ init_state() {
 if [ "$EUID" -ne 0 ]; then
     echo ""
     printf "  ${RED}[ERRO]${RESET} Este script precisa ser executado como root.\n"
-    printf "         Use: ${BOLD}sudo bash %s${RESET}\n\n" "$0"
+    printf "         Arquivo local : ${BOLD}sudo bash %s${RESET}\n" "$SELFPATH"
+    printf "         Via curl      : ${BOLD}curl -fsSL <url>/install.sh | sudo bash${RESET}\n\n"
     exit 1
 fi
-
-init_state
-header
 
 # ══════════════════════════════════════════════════════════════════════════════
 # MENU PRINCIPAL
@@ -752,9 +777,9 @@ etapa5() {
     echo "  ║          ✔  Instalação Completa — Ghost Node Nation         ║"
     echo "  ║                                                              ║"
     echo "  ║   Próximos passos:                                           ║"
-    echo "  ║   • Faça login com o usuário pleb                           ║"
-    echo "  ║   • Altere a senha padrão: passwd                           ║"
-    echo "  ║   • Verifique /home/pleb/halfin e /home/pleb/satoshi        ║"
+    echo "  ║   • Faça login com o usuário pleb                            ║"
+    echo "  ║   • Altere a senha padrão: passwd                            ║"
+    echo "  ║   • Verifique /home/pleb/halfin e /home/pleb/satoshi         ║"
     echo "  ║                                                              ║"
     echo "  ╚══════════════════════════════════════════════════════════════╝"
     printf "${RESET}\n"
@@ -779,10 +804,30 @@ run_all() {
         show_menu; return
     fi
 
-    etapa1
+    # Executa etapas em sequência — cada uma chama show_menu ao final,
+    # por isso encadeamos via state para controle de fluxo
+    etapa1 && etapa2 && etapa3 && etapa4 && etapa5 || true
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PONTO DE ENTRADA
 # ══════════════════════════════════════════════════════════════════════════════
-show_menu
+# Suporta flag --auto para execução completa sem menu (útil para scripts)
+# Exemplo: curl -fsSL <url>/install.sh | sudo bash -s -- --auto
+
+ARG="${1:-}"
+case "$ARG" in
+    --auto)
+        init_state
+        header
+        echo ""
+        printf "  ${CYAN}Modo automático ativado — executando todas as etapas.${RESET}\n"
+        press_enter
+        run_all
+        ;;
+    *)
+        init_state
+        header
+        show_menu
+        ;;
+esac
