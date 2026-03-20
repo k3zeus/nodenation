@@ -75,7 +75,7 @@ header() {
     echo "  ║          ╚██████╔╝██║░░██║╚█████╔╝██████╔╝░░░██║░░           ║"
     echo "  ║           ╚═════╝ ╚═╝  ╚═╝ ╚════╝ ╚═════╝    ╚═╝             ║"
     echo "  ║                                                              ║"
-    echo "  ║              Ghost Node Nation  —  Install v0.3              ║"
+    echo "  ║              Ghost Node Nation  —  Install v0.4              ║"
     echo "  ║                    OrangePi Zero 3 / Debian                  ║"
     echo "  ║                                                              ║"
     echo "  ╚══════════════════════════════════════════════════════════════╝"
