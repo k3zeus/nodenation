@@ -1,0 +1,948 @@
+#!/bin/bash
+#
+# ╔══════════════════════════════════════════════════════════════╗
+# ║        ghostnode — Ghost Node Nation Control Center          ║
+# ║        OrangePi Zero 3 / Debian Bookworm / Halfin            ║
+# ╚══════════════════════════════════════════════════════════════╝
+#
+# Instalação como comando global:
+#   sudo cp ghostnode /usr/local/bin/ghostnode
+#   sudo chmod +x /usr/local/bin/ghostnode
+#
+# Uso: ghostnode [--help]
+#
+
+# ══════════════════════════════════════════════════════════════════════════════
+# CONFIGURAÇÃO GLOBAL
+# ══════════════════════════════════════════════════════════════════════════════
+HALFIN_DIR="/home/pleb/halfin"
+TOOLS_DIR="$HALFIN_DIR/tools"
+DOCKER_DIR="$HALFIN_DIR/docker"
+LOG_DIR="$HALFIN_DIR/logs"
+LOG_FILE="$LOG_DIR/ghostnode_$(date +%Y%m%d).log"
+
+# ─── Cores e símbolos ─────────────────────────────────────────────────────────
+BOLD="\e[1m";    RESET="\e[0m";   DIM="\e[2m"
+GREEN="\e[32m";  YELLOW="\e[33m"; RED="\e[31m"
+CYAN="\e[36m";   MAGENTA="\e[35m";WHITE="\e[97m"
+BLUE="\e[34m";   BG_BLACK="\e[40m"
+CHECK="${GREEN}✔${RESET}";  CROSS="${RED}✘${RESET}"
+ARROW="${CYAN}▶${RESET}";   WARN="${YELLOW}⚠${RESET}"
+BULLET="${DIM}•${RESET}"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# HELP — exibido quando chamado com --help ou -h
+# ══════════════════════════════════════════════════════════════════════════════
+show_help() {
+    printf "${BOLD}${CYAN}"
+    echo ""
+    echo "  ghostnode — Ghost Node Nation Control Center"
+    printf "${RESET}"
+    echo ""
+    printf "  ${BOLD}USO:${RESET}\n"
+    printf "    ${CYAN}ghostnode${RESET}           Abre o menu interativo principal\n"
+    printf "    ${CYAN}ghostnode --help${RESET}    Exibe esta ajuda\n"
+    echo ""
+    printf "  ${BOLD}MENU PRINCIPAL:${RESET}\n"
+    printf "    ${BOLD}1${RESET}  Sistema         — Verificação, instalações, configurações e atualizações\n"
+    printf "    ${BOLD}2${RESET}  Rede            — Status Wi-Fi, conexão e diagnóstico de interfaces\n"
+    printf "    ${BOLD}3${RESET}  Docker          — Verificação, instalação e configuração de containers\n"
+    printf "    ${BOLD}4${RESET}  Reiniciar       — Reinicia o node com confirmação\n"
+    printf "    ${BOLD}5${RESET}  Desligar        — Desliga o node com confirmação\n"
+    echo ""
+    printf "  ${BOLD}DIRETÓRIOS:${RESET}\n"
+    printf "    Base     ${DIM}%s${RESET}\n" "$HALFIN_DIR"
+    printf "    Tools    ${DIM}%s${RESET}\n" "$TOOLS_DIR"
+    printf "    Docker   ${DIM}%s${RESET}\n" "$DOCKER_DIR"
+    printf "    Logs     ${DIM}%s${RESET}\n" "$LOG_DIR"
+    echo ""
+    printf "  ${BOLD}SCRIPTS UTILIZADOS:${RESET}\n"
+    printf "    ${DIM}tools/system.sh         —${RESET} Dados do sistema em tempo real\n"
+    printf "    ${DIM}tools/scan_wifi.sh      —${RESET} Escaneamento de redes Wi-Fi\n"
+    printf "    ${DIM}tools/wifi_show.sh      —${RESET} Exibição do banco de redes\n"
+    printf "    ${DIM}tools/wifi_connect.sh   —${RESET} Conexão interativa a redes\n"
+    printf "    ${DIM}docker/docker.sh        —${RESET} Setup do ambiente Docker\n"
+    echo ""
+    printf "  ${DIM}Ghost Node Nation — Halfin v0.3${RESET}\n"
+    echo ""
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# FUNÇÕES DE UI
+# ══════════════════════════════════════════════════════════════════════════════
+
+step_ok()   { printf "  ${CHECK} ${WHITE}%s${RESET}\n" "$1"; log_msg "OK" "$1"; }
+step_warn() { printf "  ${WARN}  ${YELLOW}%s${RESET}\n" "$1"; log_msg "WARN" "$1"; }
+step_err()  { printf "  ${CROSS} ${RED}%s${RESET}\n" "$1"; log_msg "ERR" "$1"; }
+step_info() { printf "  ${ARROW} ${DIM}%s${RESET}\n" "$1"; log_msg "INFO" "$1"; }
+
+sep()     { printf "${DIM}  ──────────────────────────────────────────────────────────────${RESET}\n"; }
+sep_thin(){ printf "${DIM}  ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄${RESET}\n"; }
+
+section() {
+    echo ""
+    printf "${BOLD}${MAGENTA}  ┌─ %s${RESET}\n" "$1"
+    sep_thin
+}
+
+press_enter() {
+    echo ""
+    printf "  ${DIM}[ ENTER para continuar ]${RESET}"
+    read -r
+}
+
+press_enter_or_back() {
+    echo ""
+    printf "  ${DIM}[ ENTER para voltar ao menu ]${RESET}"
+    read -r
+}
+
+confirm() {
+    local MSG="$1" DEFAULT="${2:-s}"
+    local OPTS
+    [ "$DEFAULT" = "s" ] \
+        && OPTS="${GREEN}${BOLD}S${RESET}/${DIM}n${RESET}" \
+        || OPTS="${DIM}s${RESET}/${GREEN}${BOLD}N${RESET}"
+    printf "\n  ${YELLOW}?${RESET} %s [%b]: " "$MSG" "$OPTS"
+    read -r REPLY
+    REPLY="${REPLY:-$DEFAULT}"
+    [[ "$REPLY" =~ ^[sS]$ ]]
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# LOG
+# ══════════════════════════════════════════════════════════════════════════════
+log_msg() {
+    local LEVEL="$1"; shift
+    mkdir -p "$LOG_DIR" 2>/dev/null || true
+    printf "[%s] [%s] %s\n" "$(date '+%F %T')" "$LEVEL" "$*" >> "$LOG_FILE" 2>/dev/null || true
+}
+
+log_section() {
+    log_msg "---" "════════ $* ════════"
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# BARRA DE STATUS (topo) — temperatura + data/hora
+# ══════════════════════════════════════════════════════════════════════════════
+status_bar() {
+    local TEMP="N/A"
+    local DATETIME
+    DATETIME=$(date '+%d/%m/%Y  %H:%M:%S')
+
+    # Tenta ler temperatura de múltiplas fontes
+    if command -v sensors &>/dev/null; then
+        TEMP=$(sensors 2>/dev/null \
+            | awk '/^(CPU|temp1|cpu_thermal|Package)/{match($0,/\+([0-9.]+)/,a); if(a[1]!="") {print a[1]"°C"; exit}}')
+    fi
+    # Fallback: sysfs
+    if [ -z "$TEMP" ] || [ "$TEMP" = "N/A" ]; then
+        local TFILE
+        for TFILE in \
+            /sys/class/thermal/thermal_zone0/temp \
+            /sys/devices/virtual/thermal/thermal_zone0/temp; do
+            [ -f "$TFILE" ] && TEMP="$(( $(cat "$TFILE") / 1000 ))°C" && break
+        done
+    fi
+
+    printf "${BG_BLACK}"
+    printf "  ${DIM}┌────────────────────────────────────────────────────────────┐${RESET}\n"
+    printf "  ${DIM}│${RESET}  ${YELLOW}🌡  %-8s${RESET}  ${DIM}│${RESET}  ${CYAN}📅  %-38s${RESET}  ${DIM}│${RESET}\n" \
+           "$TEMP" "$DATETIME"
+    printf "  ${DIM}└────────────────────────────────────────────────────────────┘${RESET}\n"
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# BANNER PRINCIPAL
+# ══════════════════════════════════════════════════════════════════════════════
+banner() {
+    clear
+    printf "${BOLD}${CYAN}"
+echo "  ╔══════════════════════════════════════════════════════════════╗"
+echo "  ║                                                              ║"
+echo "  ║   ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░      ║"
+echo "  ║   ░  ██████╗ ██╗  ██╗ ██████╗ ███████╗████████╗       ░      ║"
+echo "  ║   ░ ██╔════╝ ██║  ██║██╔═══██╗██╔════╝╚══██╔══╝       ░      ║"
+echo "  ║   ░ ██║  ███╗███████║██║   ██║███████╗   ██║          ░      ║"
+echo "  ║   ░ ██║   ██║██╔══██║██║   ██║╚════██║   ██║          ░      ║"
+echo "  ║   ░  ██████╔╝██║  ██║ ██████╔╝███████║   ██║          ░      ║"
+echo "  ║   ░  ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ╚═╝          ░      ║"
+echo "  ║   ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░      ║"
+echo "  ║      ███╗   ██╗ ██████╗ ██████╗ ███████╗███████╗             ║"
+echo "  ║      ████╗  ██║██╔═══██╗██╔══██╗██╔════╝██╔════╝             ║"
+echo "  ║      ██╔██╗ ██║██║   ██║██║  ██║█████╗  ███████╗             ║"
+echo "  ║      ██║╚██╗██║██║   ██║██║  ██║██╔══╝  ╚════██║             ║"
+echo "  ║      ██║ ╚████║╚██████╔╝██████╔╝███████╗███████║             ║"
+echo "  ║      ╚═╝  ╚═══╝ ╚═════╝ ╚═════╝ ╚══════╝╚══════╝             ║"
+echo "  ║                                                              ║"
+echo "  ╚══════════════════════════════════════════════════════════════╝"
+printf "${RESET}\n"
+    status_bar
+    echo ""
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# UTILITÁRIO: executa script externo com fallback
+# ══════════════════════════════════════════════════════════════════════════════
+run_script() {
+    local SCRIPT="$1"
+    local DESC="$2"
+
+    log_section "$DESC"
+
+    if [ ! -f "$SCRIPT" ]; then
+        step_err "Script não encontrado: $SCRIPT"
+        step_info "Verifique se o projeto foi instalado corretamente em $HALFIN_DIR"
+        press_enter_or_back
+        return 1
+    fi
+
+    if [ ! -x "$SCRIPT" ]; then
+        step_warn "Script sem permissão de execução — corrigindo..."
+        chmod +x "$SCRIPT"
+    fi
+
+    echo ""
+    sep
+    bash "$SCRIPT"
+    local RC=$?
+    sep
+    echo ""
+
+    if [ $RC -ne 0 ]; then
+        step_warn "Script finalizado com código de saída: $RC"
+        log_msg "WARN" "Script $SCRIPT retornou RC=$RC"
+    else
+        log_msg "OK" "Script $SCRIPT concluído com sucesso"
+    fi
+
+    return $RC
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MENU 1 — SISTEMA
+# ══════════════════════════════════════════════════════════════════════════════
+
+menu_sistema() {
+    while true; do
+        banner
+        section "1 — Sistema"
+        echo ""
+        printf "  ${BOLD}[1.1]${RESET}  Verificação do Sistema\n"
+        printf "  ${BOLD}[1.2]${RESET}  Instalações e Status dos Serviços\n"
+        printf "  ${BOLD}[1.3]${RESET}  Configurações e Correções\n"
+        printf "  ${BOLD}[1.4]${RESET}  Atualizações\n"
+        echo ""
+        sep
+        printf "  ${BOLD}[0]${RESET}   Voltar\n"
+        sep
+        echo ""
+        printf "  Opção: "
+        read -r OPT
+        case "$OPT" in
+            1.1|11|1) menu_sistema_verificacao ;;
+            1.2|12|2) menu_sistema_instalacoes ;;
+            1.3|13|3) menu_sistema_configuracoes ;;
+            1.4|14|4) menu_sistema_atualizacoes ;;
+            0|"")     return ;;
+            *)        step_warn "Opção inválida"; sleep 1 ;;
+        esac
+    done
+}
+
+# 1.1 ─────────────────────────────────────────────────────────────────────────
+menu_sistema_verificacao() {
+    banner
+    section "1.1 — Verificação do Sistema"
+    log_section "Sistema - Verificação"
+
+    step_info "Executando system.sh..."
+    run_script "$TOOLS_DIR/system.sh" "Verificação do Sistema" || true
+
+    press_enter_or_back
+}
+
+# 1.2 ─────────────────────────────────────────────────────────────────────────
+menu_sistema_instalacoes() {
+    banner
+    section "1.2 — Instalações e Status dos Serviços"
+    log_section "Sistema - Instalações"
+    echo ""
+
+    # Serviços esperados pelo projeto
+    SERVICOS="ssh hostapd NetworkManager iptables docker"
+
+    printf "  ${BOLD}%-22s %-12s %-10s %s${RESET}\n" "Serviço" "Status" "Enabled" "Info"
+    sep
+
+    for SVC in $SERVICOS; do
+        local STATUS ENABLED INFO COLOR
+
+        STATUS=$(systemctl is-active "$SVC" 2>/dev/null || echo "inativo")
+        ENABLED=$(systemctl is-enabled "$SVC" 2>/dev/null || echo "disabled")
+
+        case "$STATUS" in
+            active)   COLOR="${GREEN}";  INFO="rodando" ;;
+            inactive) COLOR="${YELLOW}"; INFO="parado"  ;;
+            failed)   COLOR="${RED}";    INFO="FALHA"   ;;
+            *)        COLOR="${DIM}";    INFO="$STATUS" ;;
+        esac
+
+        printf "  ${BULLET} ${BOLD}%-22s${RESET} ${COLOR}%-12s${RESET} %-10s ${DIM}%s${RESET}\n" \
+               "$SVC" "$STATUS" "$ENABLED" "$INFO"
+        log_msg "INFO" "Serviço $SVC: status=$STATUS enabled=$ENABLED"
+    done
+
+    sep
+    echo ""
+
+    # Ferramentas do projeto
+    printf "  ${BOLD}Ferramentas do projeto:${RESET}\n\n"
+    TOOLS="iw nmcli sqlite3 docker hostapd sensors btop"
+
+    for T in $TOOLS; do
+        if command -v "$T" &>/dev/null; then
+            VER=$(command "$T" --version 2>/dev/null | head -1 | cut -c1-40 || echo "instalado")
+            printf "  ${CHECK} ${BOLD}%-12s${RESET} ${DIM}%s${RESET}\n" "$T" "$VER"
+        else
+            printf "  ${CROSS} ${BOLD}%-12s${RESET} ${RED}não instalado${RESET}\n" "$T"
+        fi
+    done
+
+    echo ""
+    # Verifica scripts do projeto
+    printf "  ${BOLD}Scripts do projeto:${RESET}\n\n"
+    SCRIPTS=(
+        "$TOOLS_DIR/system.sh"
+        "$TOOLS_DIR/wifi_scan.sh"
+        "$TOOLS_DIR/wifi_show.sh"
+        "$TOOLS_DIR/wifi_connect.sh"
+        "$DOCKER_DIR/docker.sh"
+    )
+    for S in "${SCRIPTS[@]}"; do
+        local LABEL="${S/$HALFIN_DIR\//}"
+        if [ -f "$S" ]; then
+            [ -x "$S" ] \
+                && printf "  ${CHECK} ${DIM}%-40s${RESET} ${GREEN}ok${RESET}\n" "$LABEL" \
+                || printf "  ${WARN}  ${DIM}%-40s${RESET} ${YELLOW}sem permissão${RESET}\n" "$LABEL"
+        else
+            printf "  ${CROSS} ${DIM}%-40s${RESET} ${RED}ausente${RESET}\n" "$LABEL"
+        fi
+    done
+
+    echo ""
+    press_enter_or_back
+}
+
+# 1.3 ─────────────────────────────────────────────────────────────────────────
+menu_sistema_configuracoes() {
+    banner
+    section "1.3 — Configurações e Correções"
+    log_section "Sistema - Configurações"
+    echo ""
+
+    ERROS=0
+
+    # ── Permissões dos scripts ────────────────────────────────────────────────
+    step_info "Verificando permissões dos scripts..."
+    find "$HALFIN_DIR" -name "*.sh" -type f 2>/dev/null | while read -r F; do
+        if [ ! -x "$F" ]; then
+            chmod +x "$F"
+            step_warn "Permissão corrigida: ${F/$HALFIN_DIR\//}"
+        fi
+    done
+    step_ok "Permissões verificadas"
+
+    # ── Hostname ──────────────────────────────────────────────────────────────
+    step_info "Verificando hostname..."
+    CUR=$(hostname)
+    if [ "$CUR" = "halfin" ]; then
+        step_ok "Hostname correto: halfin"
+    else
+        step_warn "Hostname atual: $CUR — corrigindo para 'halfin'..."
+        echo "halfin" > /etc/hostname
+        hostname halfin
+        grep -q "halfin" /etc/hosts \
+            || echo "127.0.1.1	halfin" >> /etc/hosts
+        step_ok "Hostname corrigido"
+        log_msg "WARN" "Hostname corrigido de '$CUR' para 'halfin'"
+    fi
+
+    # ── Serviços críticos ─────────────────────────────────────────────────────
+    step_info "Verificando e iniciando serviços críticos..."
+    for SVC in ssh NetworkManager; do
+        STATUS=$(systemctl is-active "$SVC" 2>/dev/null || echo "inativo")
+        if [ "$STATUS" != "active" ]; then
+            step_warn "$SVC não está ativo — tentando iniciar..."
+            systemctl enable --now "$SVC" 2>/dev/null \
+                && step_ok "$SVC iniciado" \
+                || { step_err "Falha ao iniciar $SVC"; ERROS=$((ERROS+1)); log_msg "ERR" "Falha ao iniciar $SVC"; }
+        else
+            step_ok "$SVC ativo"
+        fi
+    done
+
+    # ── ip_forward ────────────────────────────────────────────────────────────
+    step_info "Verificando ip_forward..."
+    FWD=$(cat /proc/sys/net/ipv4/ip_forward 2>/dev/null || echo "0")
+    if [ "$FWD" = "1" ]; then
+        step_ok "ip_forward ativo"
+    else
+        step_warn "ip_forward desativado — corrigindo..."
+        echo 1 > /proc/sys/net/ipv4/ip_forward
+        grep -q "net.ipv4.ip_forward" /etc/sysctl.conf 2>/dev/null \
+            || echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+        step_ok "ip_forward ativado"
+        log_msg "WARN" "ip_forward foi reativado"
+    fi
+
+    # ── DNS básico ────────────────────────────────────────────────────────────
+    step_info "Verificando conectividade DNS..."
+    if ping -c1 -W3 8.8.8.8 &>/dev/null; then
+        step_ok "Internet: alcançável"
+    else
+        step_err "Internet: sem resposta em 8.8.8.8"
+        ERROS=$((ERROS+1))
+        log_msg "ERR" "Ping 8.8.8.8 falhou"
+    fi
+    if host deb.debian.org &>/dev/null; then
+        step_ok "DNS: funcionando"
+    else
+        step_warn "DNS: resolução falhou — verifique /etc/resolv.conf"
+        log_msg "WARN" "DNS falhou para deb.debian.org"
+    fi
+
+    echo ""
+    sep
+    if [ "$ERROS" -gt 0 ]; then
+        step_warn "$ERROS problema(s) não resolvido(s) automaticamente — verifique os logs em $LOG_FILE"
+    else
+        step_ok "Todas as verificações concluídas sem erros"
+    fi
+
+    press_enter_or_back
+}
+
+# 1.4 ─────────────────────────────────────────────────────────────────────────
+menu_sistema_atualizacoes() {
+    banner
+    section "1.4 — Atualizações"
+    log_section "Sistema - Atualizações"
+    echo ""
+
+    step_info "Verificando atualizações disponíveis..."
+    echo ""
+
+    set +e
+    apt-get update -qq 2>&1 | while IFS= read -r L; do
+        printf "  ${DIM}%s${RESET}\n" "$L"
+    done
+
+    UPGRADABLE=$(apt list --upgradable 2>/dev/null | grep -c "/" || true)
+    set -e
+
+    if [ "$UPGRADABLE" -eq 0 ]; then
+        step_ok "Sistema atualizado — nenhum pacote pendente"
+        press_enter_or_back
+        return
+    fi
+
+    echo ""
+    step_info "$UPGRADABLE pacote(s) com atualização disponível:"
+    echo ""
+    apt list --upgradable 2>/dev/null | grep "/" | while IFS= read -r L; do
+        printf "  ${DIM}%s${RESET}\n" "$L"
+    done
+    echo ""
+
+    if confirm "Realizar atualização agora?"; then
+        echo ""
+        sep
+        log_msg "INFO" "Iniciando apt upgrade ($UPGRADABLE pacotes)"
+        set +e
+        DEBIAN_FRONTEND=noninteractive apt-get upgrade -y 2>&1 | while IFS= read -r L; do
+            if echo "$L" | grep -qiE "^E:|error|fatal"; then
+                printf "  ${RED}%s${RESET}\n" "$L"
+            else
+                printf "  ${DIM}%s${RESET}\n" "$L"
+            fi
+        done
+        RC=${PIPESTATUS[0]}
+        set -e
+        sep
+        echo ""
+        [ $RC -eq 0 ] \
+            && { step_ok "Atualização concluída"; log_msg "OK" "apt upgrade concluído"; } \
+            || { step_err "Atualização retornou erro (RC=$RC)"; log_msg "ERR" "apt upgrade RC=$RC"; }
+    else
+        step_info "Atualização adiada"
+    fi
+
+    press_enter_or_back
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MENU 2 — CONEXÕES DE REDE
+# ══════════════════════════════════════════════════════════════════════════════
+
+menu_rede() {
+    while true; do
+        banner
+        section "2 — Conexões de Rede"
+        echo ""
+        printf "  ${BOLD}[2.1]${RESET}  Status Wi-Fi (scan + show)\n"
+        printf "  ${BOLD}[2.2]${RESET}  Conectar Wi-Fi\n"
+        printf "  ${BOLD}[2.3]${RESET}  Verificação e Diagnóstico de Interfaces\n"
+        echo ""
+        sep
+        printf "  ${BOLD}[0]${RESET}   Voltar\n"
+        sep
+        echo ""
+        printf "  Opção: "
+        read -r OPT
+        case "$OPT" in
+            2.1|21|1) menu_rede_status ;;
+            2.2|22|2) menu_rede_conectar ;;
+            2.3|23|3) menu_rede_diagnostico ;;
+            0|"")     return ;;
+            *)        step_warn "Opção inválida"; sleep 1 ;;
+        esac
+    done
+}
+
+# 2.1 ─────────────────────────────────────────────────────────────────────────
+menu_rede_status() {
+    banner
+    section "2.1 — Status Wi-Fi"
+    log_section "Rede - Status"
+    echo ""
+
+    step_info "Executando scan de redes..."
+    run_script "$TOOLS_DIR/wifi_scan.sh" "WiFi Scan" || true
+
+    echo ""
+    step_info "Exibindo banco de dados de redes..."
+    run_script "$TOOLS_DIR/wifi_show.sh" "WiFi Show" || true
+
+    press_enter_or_back
+}
+
+# 2.2 ─────────────────────────────────────────────────────────────────────────
+menu_rede_conectar() {
+    banner
+    section "2.2 — Conectar Wi-Fi"
+    log_section "Rede - Conectar"
+
+    run_script "$TOOLS_DIR/wifi_connect.sh" "WiFi Connect" || true
+    press_enter_or_back
+}
+
+# 2.3 ─────────────────────────────────────────────────────────────────────────
+menu_rede_diagnostico() {
+    banner
+    section "2.3 — Verificação e Diagnóstico de Interfaces"
+    log_section "Rede - Diagnóstico"
+    echo ""
+
+    ERROS=0
+
+    # ── Lista todas as interfaces ─────────────────────────────────────────────
+    printf "  ${BOLD}Interfaces de rede:${RESET}\n\n"
+    printf "  ${BOLD}${CYAN}%-12s %-8s %-20s %s${RESET}\n" "Interface" "Estado" "IP" "MAC"
+    sep_thin
+
+    ip -o link show 2>/dev/null | while IFS= read -r LINE; do
+        IFACE=$(echo "$LINE" | awk '{print $2}' | tr -d ':')
+        STATE=$(echo "$LINE" | grep -o "state [A-Z]*" | awk '{print $2}')
+        MAC=$(echo "$LINE" | grep -o "link/ether [^ ]*" | awk '{print $2}')
+        IP=$(ip -o -4 addr show "$IFACE" 2>/dev/null | awk '{print $4}' | head -1)
+        [ -z "$IP" ] && IP="—"
+        [ -z "$MAC" ] && MAC="—"
+
+        case "$STATE" in
+            UP)      SC="${GREEN}UP${RESET}" ;;
+            DOWN)    SC="${RED}DOWN${RESET}" ;;
+            UNKNOWN) SC="${YELLOW}?${RESET}" ;;
+            *)       SC="${DIM}$STATE${RESET}" ;;
+        esac
+
+        printf "  ${BULLET} ${BOLD}%-12s${RESET} %-17b %-20s ${DIM}%s${RESET}\n" \
+               "$IFACE" "$SC" "$IP" "$MAC"
+    done
+
+    echo ""
+    sep
+
+    # ── Interfaces wireless especificamente ──────────────────────────────────
+    printf "  ${BOLD}Interfaces wireless (iw):${RESET}\n\n"
+    if command -v iw &>/dev/null; then
+        iw dev 2>/dev/null | awk '
+            /^phy/{phy=$0}
+            /Interface/{iface=$2}
+            /ssid/{ssid=$2}
+            /channel/{chan=$2}
+            /type/{type=$2}
+            /addr/{mac=$2; printf "  • %-12s  type=%-12s  ch=%-4s  mac=%s\n", iface, type, chan, mac}
+        ' || step_warn "iw não retornou dados de interfaces"
+    else
+        step_err "iw não instalado"
+    fi
+
+    echo ""
+    sep
+
+    # ── Interfaces DOWN — tenta levantar ─────────────────────────────────────
+    step_info "Verificando interfaces DOWN..."
+    IFACES_DOWN=$(ip -o link show 2>/dev/null \
+        | awk '/state DOWN/{print $2}' | tr -d ':' \
+        | grep -v "^lo$" || true)
+
+    if [ -z "$IFACES_DOWN" ]; then
+        step_ok "Nenhuma interface crítica DOWN"
+    else
+        for IFACE in $IFACES_DOWN; do
+            step_warn "Interface DOWN: $IFACE"
+            if confirm "Tentar ativar $IFACE?"; then
+                ip link set "$IFACE" up 2>/dev/null \
+                    && step_ok "$IFACE ativada" \
+                    || { step_err "Falha ao ativar $IFACE"; ERROS=$((ERROS+1)); }
+            fi
+        done
+    fi
+
+    # ── Verifica hostapd ─────────────────────────────────────────────────────
+    echo ""
+    step_info "Verificando hostapd (AP mode)..."
+    STATUS_AP=$(systemctl is-active hostapd 2>/dev/null || echo "inativo")
+    if [ "$STATUS_AP" = "active" ]; then
+        step_ok "hostapd ativo — modo AP funcionando"
+    else
+        step_warn "hostapd: $STATUS_AP"
+        if confirm "Tentar iniciar hostapd?"; then
+            systemctl start hostapd 2>/dev/null \
+                && step_ok "hostapd iniciado" \
+                || { step_err "Falha ao iniciar hostapd — verifique /etc/hostapd/hostapd.conf"; ERROS=$((ERROS+1)); }
+        fi
+    fi
+
+    # ── Gateway e rotas ───────────────────────────────────────────────────────
+    echo ""
+    step_info "Rotas de rede:"
+    ip route 2>/dev/null | while IFS= read -r R; do
+        printf "  ${DIM}%s${RESET}\n" "$R"
+    done
+
+    echo ""
+    sep
+    [ "$ERROS" -gt 0 ] \
+        && step_warn "$ERROS problema(s) não resolvido(s) — verifique $LOG_FILE" \
+        || step_ok "Diagnóstico concluído"
+
+    log_msg "INFO" "Diagnóstico de rede: ERROS=$ERROS"
+    press_enter_or_back
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MENU 3 — DOCKER
+# ══════════════════════════════════════════════════════════════════════════════
+
+menu_docker() {
+    while true; do
+        banner
+        section "3 — Docker"
+        echo ""
+        printf "  ${BOLD}[3.1]${RESET}  Verificação e Testes\n"
+        printf "  ${BOLD}[3.2]${RESET}  Instalação do Ambiente Docker\n"
+        printf "  ${BOLD}[3.3]${RESET}  Configurações (.env e containers)\n"
+        echo ""
+        sep
+        printf "  ${BOLD}[0]${RESET}   Voltar\n"
+        sep
+        echo ""
+        printf "  Opção: "
+        read -r OPT
+        case "$OPT" in
+            3.1|31|1) menu_docker_verificacao ;;
+            3.2|32|2) menu_docker_instalacao ;;
+            3.3|33|3) menu_docker_configuracoes ;;
+            0|"")     return ;;
+            *)        step_warn "Opção inválida"; sleep 1 ;;
+        esac
+    done
+}
+
+# 3.1 ─────────────────────────────────────────────────────────────────────────
+menu_docker_verificacao() {
+    banner
+    section "3.1 — Verificação e Testes Docker"
+    log_section "Docker - Verificação"
+    echo ""
+
+    ERROS=0
+
+    # ── Docker daemon ─────────────────────────────────────────────────────────
+    step_info "Verificando Docker daemon..."
+    if ! command -v docker &>/dev/null; then
+        step_err "Docker não instalado — use o menu 3.2 para instalar"
+        press_enter_or_back; return
+    fi
+
+    DOCKER_STATUS=$(systemctl is-active docker 2>/dev/null || echo "inativo")
+    if [ "$DOCKER_STATUS" = "active" ]; then
+        DOCKER_VER=$(docker --version 2>/dev/null | cut -d' ' -f3 | tr -d ',')
+        step_ok "Docker ativo — versão $DOCKER_VER"
+    else
+        step_err "Docker daemon: $DOCKER_STATUS"
+        ERROS=$((ERROS+1))
+        log_msg "ERR" "Docker daemon inativo"
+    fi
+
+    # ── Portainer ─────────────────────────────────────────────────────────────
+    echo ""
+    step_info "Verificando Portainer..."
+    if docker ps 2>/dev/null | grep -q "portainer"; then
+        PORT_INFO=$(docker ps 2>/dev/null | grep portainer | awk '{print $NF, $(NF-1)}')
+        step_ok "Portainer rodando — $PORT_INFO"
+        # Verifica porta 9000/9443
+        if ss -tlnp 2>/dev/null | grep -qE ":9(000|443)"; then
+            step_ok "Porta Portainer acessível (9000/9443)"
+        else
+            step_warn "Portainer rodando mas porta 9000/9443 não detectada"
+        fi
+    else
+        step_warn "Portainer não encontrado nos containers ativos"
+        ERROS=$((ERROS+1))
+        log_msg "WARN" "Portainer não encontrado"
+    fi
+
+    # ── Containers ────────────────────────────────────────────────────────────
+    echo ""
+    step_info "Containers ativos:"
+    echo ""
+    if docker ps 2>/dev/null | grep -qv "CONTAINER"; then
+        printf "  ${BOLD}${CYAN}%-20s %-15s %-20s %s${RESET}\n" \
+               "Nome" "Status" "Imagem" "Portas"
+        sep_thin
+        docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}" \
+            2>/dev/null | tail -n +2 | while IFS=$'\t' read -r NAME STATUS IMAGE PORTS; do
+            echo "$STATUS" | grep -qi "up" && SC="${GREEN}" || SC="${YELLOW}"
+            printf "  ${BULLET} ${BOLD}%-20s${RESET} ${SC}%-15s${RESET} %-20s ${DIM}%s${RESET}\n" \
+                   "$NAME" "$STATUS" "$IMAGE" "$PORTS"
+        done
+    else
+        step_warn "Nenhum container ativo"
+    fi
+
+    echo ""
+    step_info "Containers parados ou com erro:"
+    STOPPED=$(docker ps -a --filter "status=exited" --format "{{.Names}} {{.Status}}" 2>/dev/null || true)
+    if [ -n "$STOPPED" ]; then
+        echo "$STOPPED" | while IFS= read -r L; do
+            printf "  ${CROSS} ${DIM}%s${RESET}\n" "$L"
+        done
+    else
+        step_ok "Nenhum container parado"
+    fi
+
+    echo ""
+    sep
+    [ "$ERROS" -gt 0 ] \
+        && step_warn "$ERROS problema(s) detectado(s) — use 3.2 ou 3.3 para corrigir" \
+        || step_ok "Docker operacional"
+
+    log_msg "INFO" "Verificação Docker: ERROS=$ERROS"
+    press_enter_or_back
+}
+
+# 3.2 ─────────────────────────────────────────────────────────────────────────
+menu_docker_instalacao() {
+    banner
+    section "3.2 — Instalação do Ambiente Docker"
+    log_section "Docker - Instalação"
+    echo ""
+
+    run_script "$DOCKER_DIR/docker.sh" "Docker Setup" || true
+    press_enter_or_back
+}
+
+# 3.3 ─────────────────────────────────────────────────────────────────────────
+menu_docker_configuracoes() {
+    banner
+    section "3.3 — Configurações Docker (.env e containers)"
+    log_section "Docker - Configurações"
+    echo ""
+
+    # ── Localiza .env ─────────────────────────────────────────────────────────
+    ENV_FILE=""
+    for F in \
+        "$HALFIN_DIR/.env" \
+        "$DOCKER_DIR/.env" \
+        "$HALFIN_DIR/docker-compose.env"; do
+        [ -f "$F" ] && ENV_FILE="$F" && break
+    done
+
+    if [ -z "$ENV_FILE" ]; then
+        step_warn "Arquivo .env não encontrado nos caminhos padrão:"
+        printf "  ${DIM}  %s${RESET}\n" "$HALFIN_DIR/.env" "$DOCKER_DIR/.env"
+        echo ""
+    else
+        step_ok "Arquivo .env encontrado: $ENV_FILE"
+        echo ""
+        printf "  ${BOLD}Variáveis configuradas:${RESET}\n\n"
+        grep -v "^#" "$ENV_FILE" 2>/dev/null \
+            | grep "=" \
+            | while IFS='=' read -r K V; do
+                # Ofusca campos com senha/token/secret
+                echo "$K" | grep -qiE "pass|token|secret|key" \
+                    && V="••••••••" \
+                    || true
+                printf "  ${DIM}%-25s${RESET} = ${CYAN}%s${RESET}\n" "$K" "$V"
+            done
+        echo ""
+    fi
+
+    # ── docker-compose ────────────────────────────────────────────────────────
+    COMPOSE_FILE=""
+    for F in \
+        "$HALFIN_DIR/docker-compose.yml" \
+        "$DOCKER_DIR/docker-compose.yml" \
+        "$HALFIN_DIR/compose.yml"; do
+        [ -f "$F" ] && COMPOSE_FILE="$F" && break
+    done
+
+    if [ -n "$COMPOSE_FILE" ]; then
+        step_ok "docker-compose.yml: $COMPOSE_FILE"
+
+        if command -v docker &>/dev/null && docker compose version &>/dev/null 2>&1; then
+            echo ""
+            step_info "Serviços definidos no compose:"
+            docker compose -f "$COMPOSE_FILE" config --services 2>/dev/null \
+                | while IFS= read -r SVC; do
+                    printf "  ${BULLET} %s\n" "$SVC"
+                done || step_warn "Falha ao ler compose"
+
+            echo ""
+            if confirm "Verificar e subir containers ausentes agora?"; then
+                sep
+                COMPOSE_DIR=$(dirname "$COMPOSE_FILE")
+                cd "$COMPOSE_DIR"
+                [ -n "$ENV_FILE" ] \
+                    && docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d 2>&1 \
+                        | while IFS= read -r L; do printf "  ${DIM}%s${RESET}\n" "$L"; done \
+                    || docker compose -f "$COMPOSE_FILE" up -d 2>&1 \
+                        | while IFS= read -r L; do printf "  ${DIM}%s${RESET}\n" "$L"; done
+                sep
+                step_ok "docker compose up -d executado"
+                log_msg "OK" "docker compose up -d em $COMPOSE_FILE"
+            fi
+        fi
+    else
+        step_warn "docker-compose.yml não encontrado — verifique $HALFIN_DIR"
+    fi
+
+    press_enter_or_back
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# OPÇÃO 4 — REINICIAR
+# ══════════════════════════════════════════════════════════════════════════════
+
+acao_reiniciar() {
+    banner
+    section "4 — Reiniciar o Node"
+    echo ""
+    printf "  ${YELLOW}${BOLD}Esta ação irá reiniciar o sistema imediatamente.${RESET}\n"
+    echo ""
+    if confirm "Confirma o reinício do node?" "n"; then
+        log_msg "WARN" "Sistema reiniciado pelo operador via ghostnode"
+        step_info "Reiniciando..."
+        sleep 1
+        reboot
+    else
+        step_info "Operação cancelada"
+        sleep 1
+    fi
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# OPÇÃO 5 — DESLIGAR
+# ══════════════════════════════════════════════════════════════════════════════
+
+acao_desligar() {
+    banner
+    section "5 — Desligar o Node"
+    echo ""
+    printf "  ${RED}${BOLD}Esta ação irá desligar o sistema.${RESET}\n"
+    printf "  ${DIM}Certifique-se de que nenhum processo crítico está em andamento.${RESET}\n"
+    echo ""
+    if confirm "Confirma o desligamento do node?" "n"; then
+        log_msg "WARN" "Sistema desligado pelo operador via ghostnode"
+        step_info "Desligando..."
+        sleep 1
+        poweroff
+    else
+        step_info "Operação cancelada"
+        sleep 1
+    fi
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MENU PRINCIPAL
+# ══════════════════════════════════════════════════════════════════════════════
+
+menu_principal() {
+    while true; do
+        banner
+
+        # ── Linha de status rápido ────────────────────────────────────────────
+        HOSTNAME_NOW=$(hostname 2>/dev/null || echo "—")
+        UPTIME_NOW=$(uptime -p 2>/dev/null | sed 's/up //' || echo "—")
+        USER_NOW="${SUDO_USER:-$(whoami)}"
+        printf "  ${DIM}Node: ${WHITE}%-15s${RESET}  ${DIM}Up: %-20s${RESET}  ${DIM}User: %s${RESET}\n\n" \
+               "$HOSTNAME_NOW" "$UPTIME_NOW" "$USER_NOW"
+
+        sep
+        printf "  ${BOLD}${WHITE}Menu Principal${RESET}\n"
+        sep
+        echo ""
+        printf "  ${BOLD}${CYAN}[1]${RESET}  ${BOLD}Sistema${RESET}              ${DIM}Verificação, serviços, configurações e atualizações${RESET}\n"
+        printf "  ${BOLD}${CYAN}[2]${RESET}  ${BOLD}Conexões de Rede${RESET}     ${DIM}Status Wi-Fi, conexão e diagnóstico de interfaces${RESET}\n"
+        printf "  ${BOLD}${CYAN}[3]${RESET}  ${BOLD}Docker${RESET}               ${DIM}Verificação, instalação e configuração de containers${RESET}\n"
+        echo ""
+        sep_thin
+        echo ""
+        printf "  ${BOLD}${YELLOW}[4]${RESET}  ${BOLD}Reiniciar o Node${RESET}     ${DIM}Reinicia o sistema com confirmação${RESET}\n"
+        printf "  ${BOLD}${RED}[5]${RESET}  ${BOLD}Desligar o Node${RESET}      ${DIM}Desliga o sistema com confirmação${RESET}\n"
+        echo ""
+        sep
+        printf "  ${BOLD}[q]${RESET}  Sair\n"
+        sep
+        echo ""
+        printf "  ${BOLD}Opção:${RESET} "
+        read -r OPT
+
+        case "$OPT" in
+            1) menu_sistema ;;
+            2) menu_rede ;;
+            3) menu_docker ;;
+            4) acao_reiniciar ;;
+            5) acao_desligar ;;
+            q|Q|0) printf "\n  ${DIM}Saindo do ghostnode...${RESET}\n\n"; exit 0 ;;
+            "") : ;;  # ENTER sem input recarrega o menu
+            *)  step_warn "Opção inválida"; sleep 1 ;;
+        esac
+    done
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PONTO DE ENTRADA
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Garante que o diretório de log existe
+mkdir -p "$LOG_DIR" 2>/dev/null || true
+log_msg "INFO" "ghostnode iniciado por ${SUDO_USER:-$(whoami)}"
+
+case "${1:-}" in
+    --help|-h) show_help; exit 0 ;;
+    *)         menu_principal ;;
+esac

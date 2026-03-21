@@ -29,7 +29,7 @@ BLUE="\e[34m"
 clear
 printf "${BOLD}${CYAN}"
 echo "  ╔══════════════════════════════════════════════════════╗"
-echo "  ║     NetworkManager Import → wifi_scan.db            ║"
+echo "  ║     NetworkManager Import → wifi_scan.db             ║"
 echo "  ╚══════════════════════════════════════════════════════╝"
 printf "${RESET}\n"
 
