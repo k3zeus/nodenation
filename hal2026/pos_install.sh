@@ -3,18 +3,18 @@
 # Script de instalação do Node Halfin - v0.2
 #
 
-echo "##### Atualizando o Sistema #####"
-sudo apt update && sudo apt upgrade -y
+#echo "##### Atualizando o Sistema #####"
+#sudo apt update && sudo apt upgrade -y
 
-echo "##### Instalando as Ferramentas Básicas #####"
-sudo apt install htop vim net-tools nmap tree lm-sensors openssh-server iptraf-ng -y
+#echo "##### Instalando as Ferramentas Básicas #####"
+#sudo apt install htop vim net-tools nmap tree lm-sensors openssh-server iptraf-ng -y
 
-echo "###### Update e Upgrade de firmwares do sistema ######"
+#echo "###### Update e Upgrade de firmwares do sistema ######"
 #
-sudo fwupdmgr refresh
+#sudo fwupdmgr refresh
 #
 # Update
-sudo fwupdmgr update -y
+#sudo fwupdmgr update -y
 
 echo "##### criando Aliases #####"
 echo '# Agora ls é colorido, frufru.

@@ -86,28 +86,28 @@ echo "server:
 
 sudo service unbound restart
 
-#
-# Criação do resolv.conf e bloqueiode alteração
-echo "nameserver 127.0.0.1" | sudo tee /etc/resolv.conf
-# Opcional: Tornar imutável para evitar sobrescrita
-sudo chattr +i /etc/resolv.conf
-#
-
 dig pi-hole.net @127.0.0.1 -p 5335
 
-touch /etc/dnsmasq.d/99-edns.conf
+echo "" > /etc/dnsmasq.d/99-edns.conf
 
 echo "
 edns-packet-max=1232" >> /etc/dnsmasq.d/99-edns.conf
 
 # Instalação do Pi-Hole
-curl -sSL https://install.pi-hole.net | sudo bash
+curl -sSL https://install.pi-hole.net | sudo bash || exit 1
 #
-
-sudo service unbound restart
 
 mv /etc/pihole/pihole.toml /etc/pihole/pihole.toml.bkp
 cp /home/pleb/halfin/Files/pihole/pihole.toml /etc/pihole/
+
+#
+# Criação do resolv.conf e bloqueiode alteração
+echo "nameserver 127.0.0.1" | sudo tee /etc/resolv.conf
+# Opcional: Tornar imutável para evitar sobrescrita
+#sudo chattr +i /etc/resolv.conf
+#
+sudo service unbound restart
+#
 
 echo ""
 echo "#########################################"
